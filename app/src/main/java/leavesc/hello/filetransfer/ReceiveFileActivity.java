@@ -27,6 +27,13 @@ import leavesc.hello.filetransfer.common.MessageDialog;
 import leavesc.hello.filetransfer.model.FileTransfer;
 import leavesc.hello.filetransfer.service.WifiServerService;
 
+/**
+ * 作者：leavesC
+ * 时间：2019/2/27 23:52
+ * 描述：
+ * GitHub：https://github.com/leavesC
+ * Blog：https://www.jianshu.com/u/9df45b87cfdf
+ */
 public class ReceiveFileActivity extends BaseActivity implements DirectActionListener {
 
     private WifiP2pManager wifiP2pManager;

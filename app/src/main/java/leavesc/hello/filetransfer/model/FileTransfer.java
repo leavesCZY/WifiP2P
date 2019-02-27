@@ -5,9 +5,11 @@ import android.support.annotation.NonNull;
 import java.io.Serializable;
 
 /**
- * 作者：叶应是叶
- * 时间：2018/2/9 21:17
- * 说明：
+ * 作者：leavesC
+ * 时间：2019/2/27 23:52
+ * 描述：
+ * GitHub：https://github.com/leavesC
+ * Blog：https://www.jianshu.com/u/9df45b87cfdf
  */
 public class FileTransfer implements Serializable {
 

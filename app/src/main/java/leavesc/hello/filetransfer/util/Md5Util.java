@@ -7,9 +7,11 @@ import java.io.InputStream;
 import java.security.MessageDigest;
 
 /**
- * 作者：叶应是叶
- * 时间：2018/2/14 21:16
+ * 作者：leavesC
+ * 时间：2019/2/27 23:57
  * 描述：
+ * GitHub：https://github.com/leavesC
+ * Blog：https://www.jianshu.com/u/9df45b87cfdf
  */
 public class Md5Util {
 

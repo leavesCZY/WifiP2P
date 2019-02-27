@@ -8,9 +8,6 @@ import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
-import leavesc.hello.filetransfer.model.FileTransfer;
-import leavesc.hello.filetransfer.util.Md5Util;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -20,10 +17,15 @@ import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+import leavesc.hello.filetransfer.model.FileTransfer;
+import leavesc.hello.filetransfer.util.Md5Util;
+
 /**
- * 作者：叶应是叶
+ * 作者：leavesC
  * 时间：2018/2/14 21:09
  * 描述：服务器端接收文件
+ * GitHub：https://github.com/leavesC
+ * Blog：https://www.jianshu.com/u/9df45b87cfdf
  */
 public class WifiServerService extends IntentService {
 
