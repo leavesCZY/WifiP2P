@@ -1,7 +1,13 @@
 package leavesc.hello.filetransfer.service;
 
+import static android.app.NotificationManager.IMPORTANCE_HIGH;
+
 import android.app.IntentService;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Binder;
 import android.os.Environment;
 import android.os.IBinder;
@@ -86,6 +92,9 @@ public class WifiServerService extends IntentService {
             String name = new File(fileTransfer.getFilePath()).getName();
             //将文件存储至指定位置
             file = new File(Environment.getExternalStorageDirectory() + "/" + name);
+            if(!file.exists ()){
+                file.createNewFile ();
+            }
             fileOutputStream = new FileOutputStream(file);
             byte buf[] = new byte[512];
             int len;
@@ -163,6 +172,27 @@ public class WifiServerService extends IntentService {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+        }
+    }
+
+    @Override
+    public void onCreate () {
+        super.onCreate ( );
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            String CHANNEL_ONE_ID = "wifip2p";
+            String CHANNEL_ONE_NAME = "Channel Wifi";
+            NotificationChannel notificationChannel = new NotificationChannel (CHANNEL_ONE_ID,
+                    CHANNEL_ONE_NAME, IMPORTANCE_HIGH);
+            notificationChannel.enableLights(true);
+            notificationChannel.setLightColor( Color.RED);
+            notificationChannel.setShowBadge(true);
+            notificationChannel.setLockscreenVisibility( Notification.VISIBILITY_PUBLIC);
+            NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+            manager.createNotificationChannel(notificationChannel);
+            Notification notification = new Notification.Builder(getApplicationContext())
+                    .setChannelId(CHANNEL_ONE_ID)
+                    .build();
+            startForeground(1000, notification);
         }
     }
 

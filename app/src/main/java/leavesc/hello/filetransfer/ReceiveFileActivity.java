@@ -10,6 +10,7 @@ import android.net.Uri;
 import android.net.wifi.p2p.WifiP2pDevice;
 import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.text.TextUtils;
@@ -146,7 +147,11 @@ public class ReceiveFileActivity extends BaseActivity implements DirectActionLis
         Log.e(TAG, "groupFormed：" + wifiP2pInfo.groupFormed);
         if (wifiP2pInfo.groupFormed && wifiP2pInfo.isGroupOwner) {
             if (wifiServerService != null) {
-                startService(new Intent(this, WifiServerService.class));
+                if ( Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    startForegroundService(new Intent(this, WifiServerService.class));
+                } else {
+                    startService(new Intent(this, WifiServerService.class));
+                }
             }
         }
     }
