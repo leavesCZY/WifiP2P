@@ -5,7 +5,7 @@ import android.content.Intent;
 import android.os.Binder;
 import android.os.Environment;
 import android.os.IBinder;
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 import android.util.Log;
 
 import java.io.File;
@@ -87,7 +87,7 @@ public class WifiServerService extends IntentService {
             //将文件存储至指定位置
             file = new File(Environment.getExternalStorageDirectory() + "/" + name);
             fileOutputStream = new FileOutputStream(file);
-            byte buf[] = new byte[512];
+            byte[] buf = new byte[512];
             int len;
             long total = 0;
             int progress;

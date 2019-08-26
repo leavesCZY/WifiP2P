@@ -2,7 +2,7 @@ package leavesc.hello.filetransfer.common;
 
 import android.app.Dialog;
 import android.content.Context;
-import android.support.annotation.StringRes;
+import androidx.annotation.StringRes;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;

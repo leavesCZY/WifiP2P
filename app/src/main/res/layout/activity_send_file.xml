@@ -69,12 +69,6 @@
         android:textSize="18sp"
         tools:text="文件发送列表" />
 
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="@android:color/holo_blue_light"
-        android:gravity="center_vertical" />
-
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -82,7 +76,13 @@
         android:textStyle="bold"
         tools:text="设备列表" />
 
-    <android.support.v7.widget.RecyclerView
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@android:color/holo_blue_light"
+        android:gravity="center_vertical" />
+
+    <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rv_deviceList"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />

@@ -3,7 +3,7 @@ package leavesc.hello.filetransfer;
 import android.content.Intent;
 import android.net.wifi.p2p.WifiP2pDevice;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatActivity;
 import android.view.View;
 
 /**

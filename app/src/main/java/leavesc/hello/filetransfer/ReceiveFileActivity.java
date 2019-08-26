@@ -96,6 +96,10 @@ public class ReceiveFileActivity extends BaseActivity implements DirectActionLis
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_receive_file);
         wifiP2pManager = (WifiP2pManager) getSystemService(WIFI_P2P_SERVICE);
+        if (wifiP2pManager == null) {
+            finish();
+            return;
+        }
         channel = wifiP2pManager.initialize(this, getMainLooper(), this);
         broadcastReceiver = new DirectBroadcastReceiver(wifiP2pManager, channel, this);
         registerReceiver(broadcastReceiver, DirectBroadcastReceiver.getIntentFilter());

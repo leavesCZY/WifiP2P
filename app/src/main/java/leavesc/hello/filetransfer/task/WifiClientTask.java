@@ -5,9 +5,6 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import leavesc.hello.filetransfer.model.FileTransfer;
-import leavesc.hello.filetransfer.util.Md5Util;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -16,6 +13,9 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+
+import leavesc.hello.filetransfer.model.FileTransfer;
+import leavesc.hello.filetransfer.util.Md5Util;
 
 /**
  * 作者：leavesC
@@ -67,7 +67,7 @@ public class WifiClientTask extends AsyncTask<String, Integer, Boolean> {
             inputStream = new FileInputStream(new File(fileTransfer.getFilePath()));
             long fileSize = fileTransfer.getFileLength();
             long total = 0;
-            byte buf[] = new byte[512];
+            byte[] buf = new byte[512];
             int len;
             while ((len = inputStream.read(buf)) != -1) {
                 outputStream.write(buf, 0, len);

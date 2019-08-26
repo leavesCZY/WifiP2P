@@ -11,14 +11,15 @@ import android.net.wifi.p2p.WifiP2pDevice;
 import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Bundle;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -98,6 +99,10 @@ public class SendFileActivity extends BaseActivity implements DirectActionListen
         setContentView(R.layout.activity_send_file);
         initView();
         mWifiP2pManager = (WifiP2pManager) getSystemService(WIFI_P2P_SERVICE);
+        if (mWifiP2pManager == null) {
+            finish();
+            return;
+        }
         mChannel = mWifiP2pManager.initialize(this, getMainLooper(), this);
         broadcastReceiver = new DirectBroadcastReceiver(mWifiP2pManager, mChannel, this);
         registerReceiver(broadcastReceiver, DirectBroadcastReceiver.getIntentFilter());
