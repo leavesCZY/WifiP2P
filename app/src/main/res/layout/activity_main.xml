@@ -6,31 +6,41 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/guideline"
-        android:layout_width="wrap_content"
+    <Button
+        android:id="@+id/btn_checkPermission"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.5" />
+        android:layout_margin="20dp"
+        android:onClick="checkPermission"
+        android:text="检查权限"
+        app:layout_constraintBottom_toTopOf="@id/btn_sender"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_chainStyle="packed" />
 
     <Button
-        android:layout_width="match_parent"
+        android:id="@+id/btn_sender"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_margin="10dp"
-        android:onClick="sendFile"
+        android:layout_margin="20dp"
+        android:onClick="startFileSenderActivity"
         android:text="发送文件"
-        app:layout_constraintBottom_toTopOf="@id/guideline"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent" />
+        app:layout_constraintBottom_toTopOf="@id/btn_receiver"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/btn_checkPermission" />
 
     <Button
-        android:layout_width="match_parent"
+        android:id="@+id/btn_receiver"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_margin="10dp"
-        android:onClick="receiveFile"
+        android:layout_margin="20dp"
+        android:onClick="startFileReceiverActivity"
         android:text="接收文件"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/guideline" />
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/btn_sender" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

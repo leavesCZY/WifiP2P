@@ -5,8 +5,9 @@ import android.content.Intent;
 import android.os.Binder;
 import android.os.Environment;
 import android.os.IBinder;
-import androidx.annotation.Nullable;
 import android.util.Log;
+
+import androidx.annotation.Nullable;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -17,6 +18,7 @@ import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+import leavesc.hello.filetransfer.common.Constants;
 import leavesc.hello.filetransfer.model.FileTransfer;
 import leavesc.hello.filetransfer.util.Md5Util;
 
@@ -51,8 +53,6 @@ public class WifiServerService extends IntentService {
 
     private OnProgressChangListener progressChangListener;
 
-    private static final int PORT = 4786;
-
     public class MyBinder extends Binder {
         public WifiServerService getService() {
             return WifiServerService.this;
@@ -76,7 +76,7 @@ public class WifiServerService extends IntentService {
         try {
             serverSocket = new ServerSocket();
             serverSocket.setReuseAddress(true);
-            serverSocket.bind(new InetSocketAddress(PORT));
+            serverSocket.bind(new InetSocketAddress(Constants.PORT));
             Socket client = serverSocket.accept();
             Log.e(TAG, "客户端IP地址 : " + client.getInetAddress().getHostAddress());
             inputStream = client.getInputStream();
@@ -132,7 +132,7 @@ public class WifiServerService extends IntentService {
     }
 
     private void clean() {
-        if (serverSocket != null) {
+        if (serverSocket != null && !serverSocket.isClosed()) {
             try {
                 serverSocket.close();
                 serverSocket = null;

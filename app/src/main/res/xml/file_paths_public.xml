@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <root-path
+        name="root"
+        path="" />
+    <files-path
+        name="files"
+        path="." />
+    <cache-path
+        name="cache"
+        path="." />
+    <external-path
+        name="external"
+        path="photoCrop/" />
+    <external-files-path
+        name="efp_download"
+        path="Download/" />
+    <external-files-path
+        name="efp_pictures"
+        path="Pictures/" />
+    <external-files-path
+        name="crop_file"
+        path="photoCrop/" />
+    <external-cache-path
+        name="external_cache_path"
+        path="." />
+</paths>

@@ -55,7 +55,7 @@ public class DirectBroadcastReceiver extends BroadcastReceiver {
             switch (action) {
                 // 用于指示 Wifi P2P 是否可用
                 case WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION: {
-                    int state = intent.getIntExtra(WifiP2pManager.EXTRA_WIFI_STATE, -1);
+                    int state = intent.getIntExtra(WifiP2pManager.EXTRA_WIFI_STATE, -100);
                     if (state == WifiP2pManager.WIFI_P2P_STATE_ENABLED) {
                         mDirectActionListener.wifiP2pEnabled(true);
                     } else {

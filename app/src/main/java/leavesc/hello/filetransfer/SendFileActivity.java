@@ -1,10 +1,8 @@
 package leavesc.hello.filetransfer;
 
 import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
-import android.net.Uri;
+import android.content.pm.ActivityInfo;
 import android.net.wifi.WpsInfo;
 import android.net.wifi.p2p.WifiP2pConfig;
 import android.net.wifi.p2p.WifiP2pDevice;
@@ -21,6 +19,10 @@ import android.widget.TextView;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.zhihu.matisse.Matisse;
+import com.zhihu.matisse.MimeType;
+import com.zhihu.matisse.internal.entity.CaptureStrategy;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -29,6 +31,7 @@ import java.util.List;
 import leavesc.hello.filetransfer.adapter.DeviceAdapter;
 import leavesc.hello.filetransfer.broadcast.DirectBroadcastReceiver;
 import leavesc.hello.filetransfer.callback.DirectActionListener;
+import leavesc.hello.filetransfer.common.Glide4Engine;
 import leavesc.hello.filetransfer.common.LoadingDialog;
 import leavesc.hello.filetransfer.model.FileTransfer;
 import leavesc.hello.filetransfer.task.WifiClientTask;
@@ -40,15 +43,96 @@ import leavesc.hello.filetransfer.task.WifiClientTask;
  * GitHub：https://github.com/leavesC
  * Blog：https://www.jianshu.com/u/9df45b87cfdf
  */
-public class SendFileActivity extends BaseActivity implements DirectActionListener {
+public class SendFileActivity extends BaseActivity {
 
-    public static final String TAG = "SendFileActivity";
+    private static final String TAG = "SendFileActivity";
 
-    private WifiP2pManager mWifiP2pManager;
+    private static final int CODE_CHOOSE_FILE = 100;
 
-    private boolean mWifiP2pEnabled = false;
+    private WifiP2pManager wifiP2pManager;
 
-    private WifiP2pManager.Channel mChannel;
+    private WifiP2pManager.Channel channel;
+
+    private WifiP2pInfo wifiP2pInfo;
+
+    private boolean wifiP2pEnabled = false;
+
+    private DirectActionListener directActionListener = new DirectActionListener() {
+
+        @Override
+        public void wifiP2pEnabled(boolean enabled) {
+            wifiP2pEnabled = enabled;
+        }
+
+        @Override
+        public void onConnectionInfoAvailable(WifiP2pInfo wifiP2pInfo) {
+            dismissLoadingDialog();
+            wifiP2pDeviceList.clear();
+            deviceAdapter.notifyDataSetChanged();
+            btn_disconnect.setEnabled(true);
+            btn_chooseFile.setEnabled(true);
+            Log.e(TAG, "onConnectionInfoAvailable");
+            Log.e(TAG, "onConnectionInfoAvailable groupFormed: " + wifiP2pInfo.groupFormed);
+            Log.e(TAG, "onConnectionInfoAvailable isGroupOwner: " + wifiP2pInfo.isGroupOwner);
+            Log.e(TAG, "onConnectionInfoAvailable getHostAddress: " + wifiP2pInfo.groupOwnerAddress.getHostAddress());
+            StringBuilder stringBuilder = new StringBuilder();
+            if (mWifiP2pDevice != null) {
+                stringBuilder.append("连接的设备名：");
+                stringBuilder.append(mWifiP2pDevice.deviceName);
+                stringBuilder.append("\n");
+                stringBuilder.append("连接的设备的地址：");
+                stringBuilder.append(mWifiP2pDevice.deviceAddress);
+            }
+            stringBuilder.append("\n");
+            stringBuilder.append("是否群主：");
+            stringBuilder.append(wifiP2pInfo.isGroupOwner ? "是群主" : "非群主");
+            stringBuilder.append("\n");
+            stringBuilder.append("群主IP地址：");
+            stringBuilder.append(wifiP2pInfo.groupOwnerAddress.getHostAddress());
+            tv_status.setText(stringBuilder);
+            if (wifiP2pInfo.groupFormed && !wifiP2pInfo.isGroupOwner) {
+                SendFileActivity.this.wifiP2pInfo = wifiP2pInfo;
+            }
+        }
+
+        @Override
+        public void onDisconnection() {
+            Log.e(TAG, "onDisconnection");
+            btn_disconnect.setEnabled(false);
+            btn_chooseFile.setEnabled(false);
+            showToast("已断开连接");
+            wifiP2pDeviceList.clear();
+            deviceAdapter.notifyDataSetChanged();
+            tv_status.setText(null);
+            SendFileActivity.this.wifiP2pInfo = null;
+        }
+
+        @Override
+        public void onSelfDeviceAvailable(WifiP2pDevice wifiP2pDevice) {
+            Log.e(TAG, "onSelfDeviceAvailable");
+            Log.e(TAG, "DeviceName: " + wifiP2pDevice.deviceName);
+            Log.e(TAG, "DeviceAddress: " + wifiP2pDevice.deviceAddress);
+            Log.e(TAG, "Status: " + wifiP2pDevice.status);
+            tv_myDeviceName.setText(wifiP2pDevice.deviceName);
+            tv_myDeviceAddress.setText(wifiP2pDevice.deviceAddress);
+            tv_myDeviceStatus.setText(MainActivity.getDeviceStatus(wifiP2pDevice.status));
+        }
+
+        @Override
+        public void onPeersAvailable(Collection<WifiP2pDevice> wifiP2pDeviceList) {
+            Log.e(TAG, "onPeersAvailable :" + wifiP2pDeviceList.size());
+            SendFileActivity.this.wifiP2pDeviceList.clear();
+            SendFileActivity.this.wifiP2pDeviceList.addAll(wifiP2pDeviceList);
+            deviceAdapter.notifyDataSetChanged();
+            loadingDialog.cancel();
+        }
+
+        @Override
+        public void onChannelDisconnected() {
+            Log.e(TAG, "onChannelDisconnected");
+        }
+
+    };
 
     private TextView tv_myDeviceName;
 
@@ -83,10 +167,7 @@ public class SendFileActivity extends BaseActivity implements DirectActionListen
                     break;
                 }
                 case R.id.btn_chooseFile: {
-                    Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-                    intent.setType("*/*");
-                    intent.addCategory(Intent.CATEGORY_OPENABLE);
-                    startActivityForResult(intent, 1);
+                    navToChose();
                     break;
                 }
             }
@@ -98,17 +179,22 @@ public class SendFileActivity extends BaseActivity implements DirectActionListen
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_send_file);
         initView();
-        mWifiP2pManager = (WifiP2pManager) getSystemService(WIFI_P2P_SERVICE);
-        if (mWifiP2pManager == null) {
+        initEvent();
+    }
+
+    private void initEvent() {
+        wifiP2pManager = (WifiP2pManager) getSystemService(WIFI_P2P_SERVICE);
+        if (wifiP2pManager == null) {
             finish();
             return;
         }
-        mChannel = mWifiP2pManager.initialize(this, getMainLooper(), this);
-        broadcastReceiver = new DirectBroadcastReceiver(mWifiP2pManager, mChannel, this);
+        channel = wifiP2pManager.initialize(this, getMainLooper(), directActionListener);
+        broadcastReceiver = new DirectBroadcastReceiver(wifiP2pManager, channel, directActionListener);
         registerReceiver(broadcastReceiver, DirectBroadcastReceiver.getIntentFilter());
     }
 
     private void initView() {
+        setTitle("发送文件");
         tv_myDeviceName = findViewById(R.id.tv_myDeviceName);
         tv_myDeviceAddress = findViewById(R.id.tv_myDeviceAddress);
         tv_myDeviceStatus = findViewById(R.id.tv_myDeviceStatus);
@@ -143,19 +229,15 @@ public class SendFileActivity extends BaseActivity implements DirectActionListen
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == 1) {
-            if (resultCode == RESULT_OK) {
-                Uri uri = data.getData();
-                if (uri != null) {
-                    String path = getPath(this, uri);
-                    if (path != null) {
-                        File file = new File(path);
-                        if (file.exists() && wifiP2pInfo != null) {
-                            FileTransfer fileTransfer = new FileTransfer(file.getPath(), file.length());
-                            Log.e(TAG, "待发送的文件：" + fileTransfer);
-                            new WifiClientTask(this, fileTransfer).execute(wifiP2pInfo.groupOwnerAddress.getHostAddress());
-                        }
-                    }
+        if (requestCode == CODE_CHOOSE_FILE && resultCode == RESULT_OK) {
+            List<String> strings = Matisse.obtainPathResult(data);
+            if (strings != null && !strings.isEmpty()) {
+                String path = strings.get(0);
+                Log.e(TAG, "文件路径：" + path);
+                File file = new File(path);
+                if (file.exists() && wifiP2pInfo != null) {
+                    FileTransfer fileTransfer = new FileTransfer(file.getPath(), file.length());
+                    new WifiClientTask(this, fileTransfer).execute(wifiP2pInfo.groupOwnerAddress.getHostAddress());
                 }
             }
         }
@@ -167,7 +249,7 @@ public class SendFileActivity extends BaseActivity implements DirectActionListen
             config.deviceAddress = mWifiP2pDevice.deviceAddress;
             config.wps.setup = WpsInfo.PBC;
             showLoadingDialog("正在连接 " + mWifiP2pDevice.deviceName);
-            mWifiP2pManager.connect(mChannel, config, new WifiP2pManager.ActionListener() {
+            wifiP2pManager.connect(channel, config, new WifiP2pManager.ActionListener() {
                 @Override
                 public void onSuccess() {
                     Log.e(TAG, "connect onSuccess");
@@ -183,7 +265,7 @@ public class SendFileActivity extends BaseActivity implements DirectActionListen
     }
 
     private void disconnect() {
-        mWifiP2pManager.removeGroup(mChannel, new WifiP2pManager.ActionListener() {
+        wifiP2pManager.removeGroup(channel, new WifiP2pManager.ActionListener() {
             @Override
             public void onFailure(int reasonCode) {
                 Log.e(TAG, "disconnect onFailure:" + reasonCode);
@@ -209,7 +291,7 @@ public class SendFileActivity extends BaseActivity implements DirectActionListen
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menuDirectEnable: {
-                if (mWifiP2pManager != null && mChannel != null) {
+                if (wifiP2pManager != null && channel != null) {
                     startActivity(new Intent(android.provider.Settings.ACTION_WIFI_SETTINGS));
                 } else {
                     showToast("当前设备不支持Wifi Direct");
@@ -217,7 +299,7 @@ public class SendFileActivity extends BaseActivity implements DirectActionListen
                 return true;
             }
             case R.id.menuDirectDiscover: {
-                if (!mWifiP2pEnabled) {
+                if (!wifiP2pEnabled) {
                     showToast("需要先打开Wifi");
                     return true;
                 }
@@ -225,7 +307,7 @@ public class SendFileActivity extends BaseActivity implements DirectActionListen
                 wifiP2pDeviceList.clear();
                 deviceAdapter.notifyDataSetChanged();
                 //搜寻附近带有 Wi-Fi P2P 的设备
-                mWifiP2pManager.discoverPeers(mChannel, new WifiP2pManager.ActionListener() {
+                wifiP2pManager.discoverPeers(channel, new WifiP2pManager.ActionListener() {
                     @Override
                     public void onSuccess() {
                         showToast("Success");
@@ -244,95 +326,18 @@ public class SendFileActivity extends BaseActivity implements DirectActionListen
         }
     }
 
-    @Override
-    public void wifiP2pEnabled(boolean enabled) {
-        mWifiP2pEnabled = enabled;
-    }
-
-    private WifiP2pInfo wifiP2pInfo;
-
-    @Override
-    public void onConnectionInfoAvailable(WifiP2pInfo wifiP2pInfo) {
-        dismissLoadingDialog();
-        wifiP2pDeviceList.clear();
-        deviceAdapter.notifyDataSetChanged();
-        btn_disconnect.setEnabled(true);
-        btn_chooseFile.setEnabled(true);
-        Log.e(TAG, "onConnectionInfoAvailable");
-        Log.e(TAG, "onConnectionInfoAvailable groupFormed: " + wifiP2pInfo.groupFormed);
-        Log.e(TAG, "onConnectionInfoAvailable isGroupOwner: " + wifiP2pInfo.isGroupOwner);
-        Log.e(TAG, "onConnectionInfoAvailable getHostAddress: " + wifiP2pInfo.groupOwnerAddress.getHostAddress());
-        StringBuilder stringBuilder = new StringBuilder();
-        if (mWifiP2pDevice != null) {
-            stringBuilder.append("连接的设备名：");
-            stringBuilder.append(mWifiP2pDevice.deviceName);
-            stringBuilder.append("\n");
-            stringBuilder.append("连接的设备的地址：");
-            stringBuilder.append(mWifiP2pDevice.deviceAddress);
-        }
-        stringBuilder.append("\n");
-        stringBuilder.append("是否群主：");
-        stringBuilder.append(wifiP2pInfo.isGroupOwner ? "是群主" : "非群主");
-        stringBuilder.append("\n");
-        stringBuilder.append("群主IP地址：");
-        stringBuilder.append(wifiP2pInfo.groupOwnerAddress.getHostAddress());
-        tv_status.setText(stringBuilder);
-        if (wifiP2pInfo.groupFormed && !wifiP2pInfo.isGroupOwner) {
-            this.wifiP2pInfo = wifiP2pInfo;
-        }
-    }
-
-    @Override
-    public void onDisconnection() {
-        Log.e(TAG, "onDisconnection");
-        btn_disconnect.setEnabled(false);
-        btn_chooseFile.setEnabled(false);
-        showToast("已断开连接");
-        wifiP2pDeviceList.clear();
-        deviceAdapter.notifyDataSetChanged();
-        tv_status.setText(null);
-        this.wifiP2pInfo = null;
-    }
-
-    @Override
-    public void onSelfDeviceAvailable(WifiP2pDevice wifiP2pDevice) {
-        Log.e(TAG, "onSelfDeviceAvailable");
-        Log.e(TAG, "DeviceName: " + wifiP2pDevice.deviceName);
-        Log.e(TAG, "DeviceAddress: " + wifiP2pDevice.deviceAddress);
-        Log.e(TAG, "Status: " + wifiP2pDevice.status);
-        tv_myDeviceName.setText(wifiP2pDevice.deviceName);
-        tv_myDeviceAddress.setText(wifiP2pDevice.deviceAddress);
-        tv_myDeviceStatus.setText(MainActivity.getDeviceStatus(wifiP2pDevice.status));
-    }
-
-    @Override
-    public void onPeersAvailable(Collection<WifiP2pDevice> wifiP2pDeviceList) {
-        Log.e(TAG, "onPeersAvailable :" + wifiP2pDeviceList.size());
-        this.wifiP2pDeviceList.clear();
-        this.wifiP2pDeviceList.addAll(wifiP2pDeviceList);
-        deviceAdapter.notifyDataSetChanged();
-        loadingDialog.cancel();
-    }
-
-    @Override
-    public void onChannelDisconnected() {
-        Log.e(TAG, "onChannelDisconnected");
-    }
-
-    private String getPath(Context context, Uri uri) {
-        if ("content".equalsIgnoreCase(uri.getScheme())) {
-            Cursor cursor = context.getContentResolver().query(uri, new String[]{"_data"}, null, null, null);
-            if (cursor != null) {
-                if (cursor.moveToFirst()) {
-                    String data = cursor.getString(cursor.getColumnIndex("_data"));
-                    cursor.close();
-                    return data;
-                }
-            }
-        } else if ("file".equalsIgnoreCase(uri.getScheme())) {
-            return uri.getPath();
-        }
-        return null;
+    private void navToChose() {
+        Matisse.from(this)
+                .choose(MimeType.ofImage())
+                .countable(true)
+                .showSingleMediaType(true)
+                .maxSelectable(1)
+                .capture(false)
+                .captureStrategy(new CaptureStrategy(true, BuildConfig.APPLICATION_ID + ".fileprovider"))
+                .restrictOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED)
+                .thumbnailScale(0.70f)
+                .imageEngine(new Glide4Engine())
+                .forResult(CODE_CHOOSE_FILE);
     }
 
 }

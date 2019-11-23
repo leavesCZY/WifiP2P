@@ -14,6 +14,7 @@ import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 
+import leavesc.hello.filetransfer.common.Constants;
 import leavesc.hello.filetransfer.model.FileTransfer;
 import leavesc.hello.filetransfer.util.Md5Util;
 
@@ -26,13 +27,11 @@ import leavesc.hello.filetransfer.util.Md5Util;
  */
 public class WifiClientTask extends AsyncTask<String, Integer, Boolean> {
 
+    private static final String TAG = "WifiClientTask";
+
     private ProgressDialog progressDialog;
 
     private FileTransfer fileTransfer;
-
-    private static final int PORT = 4786;
-
-    private static final String TAG = "WifiClientTask";
 
     public WifiClientTask(Context context, FileTransfer fileTransfer) {
         this.fileTransfer = fileTransfer;
@@ -60,7 +59,7 @@ public class WifiClientTask extends AsyncTask<String, Integer, Boolean> {
         try {
             socket = new Socket();
             socket.bind(null);
-            socket.connect((new InetSocketAddress(strings[0], PORT)), 10000);
+            socket.connect((new InetSocketAddress(strings[0], Constants.PORT)), 10000);
             outputStream = socket.getOutputStream();
             objectOutputStream = new ObjectOutputStream(outputStream);
             objectOutputStream.writeObject(fileTransfer);
@@ -76,19 +75,33 @@ public class WifiClientTask extends AsyncTask<String, Integer, Boolean> {
                 publishProgress(progress);
                 Log.e(TAG, "文件发送进度：" + progress);
             }
+            socket.close();
+            inputStream.close();
             outputStream.close();
             objectOutputStream.close();
-            inputStream.close();
-            socket.close();
+            socket = null;
+            inputStream = null;
             outputStream = null;
             objectOutputStream = null;
-            inputStream = null;
-            socket = null;
             Log.e(TAG, "文件发送成功");
             return true;
         } catch (Exception e) {
             Log.e(TAG, "文件发送异常 Exception: " + e.getMessage());
         } finally {
+            if (socket != null && !socket.isClosed()) {
+                try {
+                    socket.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            if (inputStream != null) {
+                try {
+                    inputStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
             if (outputStream != null) {
                 try {
                     outputStream.close();
@@ -100,20 +113,6 @@ public class WifiClientTask extends AsyncTask<String, Integer, Boolean> {
                 try {
                     objectOutputStream.close();
                 } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-            if (inputStream != null) {
-                try {
-                    inputStream.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-            if (socket != null) {
-                try {
-                    socket.close();
-                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }

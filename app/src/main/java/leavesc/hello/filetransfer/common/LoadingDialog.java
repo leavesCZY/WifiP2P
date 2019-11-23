@@ -2,11 +2,12 @@ package leavesc.hello.filetransfer.common;
 
 import android.app.Dialog;
 import android.content.Context;
-import androidx.annotation.StringRes;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import androidx.annotation.StringRes;
 
 import leavesc.hello.filetransfer.R;
 
@@ -27,7 +28,7 @@ public class LoadingDialog extends Dialog {
         super(context, R.style.LoadingDialogTheme);
         setContentView(R.layout.dialog_loading);
         iv_loading = findViewById(R.id.iv_loading);
-        tv_hint =  findViewById(R.id.tv_hint);
+        tv_hint = findViewById(R.id.tv_hint);
         animation = AnimationUtils.loadAnimation(context, R.anim.loading_dialog);
     }
 

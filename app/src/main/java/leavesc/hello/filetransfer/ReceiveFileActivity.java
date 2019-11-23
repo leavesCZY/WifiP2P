@@ -3,27 +3,24 @@ package leavesc.hello.filetransfer;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.net.Uri;
 import android.net.wifi.p2p.WifiP2pDevice;
 import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
-import android.webkit.MimeTypeMap;
+import android.widget.ImageView;
+
+import com.bumptech.glide.Glide;
 
 import java.io.File;
 import java.util.Collection;
-import java.util.Locale;
 
 import leavesc.hello.filetransfer.broadcast.DirectBroadcastReceiver;
 import leavesc.hello.filetransfer.callback.DirectActionListener;
-import leavesc.hello.filetransfer.common.MessageDialog;
 import leavesc.hello.filetransfer.model.FileTransfer;
 import leavesc.hello.filetransfer.service.WifiServerService;
 
@@ -82,19 +79,22 @@ public class ReceiveFileActivity extends BaseActivity implements DirectActionLis
                 public void run() {
                     progressDialog.cancel();
                     if (file != null && file.exists()) {
-                        openFile(file.getPath());
+                        Glide.with(ReceiveFileActivity.this).load(file.getPath()).into(iv_image);
                     }
                 }
             });
         }
     };
 
-    protected static final String TAG = "ReceiveFileActivity";
+    private static final String TAG = "ReceiveFileActivity";
+
+    private ImageView iv_image;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_receive_file);
+        initView();
         wifiP2pManager = (WifiP2pManager) getSystemService(WIFI_P2P_SERVICE);
         if (wifiP2pManager == null) {
             finish();
@@ -104,26 +104,17 @@ public class ReceiveFileActivity extends BaseActivity implements DirectActionLis
         broadcastReceiver = new DirectBroadcastReceiver(wifiP2pManager, channel, this);
         registerReceiver(broadcastReceiver, DirectBroadcastReceiver.getIntentFilter());
         bindService();
+    }
+
+    private void initView() {
+        setTitle("接收文件");
+        iv_image = findViewById(R.id.iv_image);
         progressDialog = new ProgressDialog(this);
         progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
         progressDialog.setCancelable(false);
         progressDialog.setCanceledOnTouchOutside(false);
         progressDialog.setTitle("正在接收文件");
         progressDialog.setMax(100);
-    }
-
-    @Override
-    public void onBackPressed() {
-        final MessageDialog messageDialog = new MessageDialog();
-        messageDialog.show(null, "退出当前界面将取消文件传输，是否确认退出？", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                messageDialog.dismiss();
-                if (which == DialogInterface.BUTTON_POSITIVE) {
-                    ReceiveFileActivity.super.onBackPressed();
-                }
-            }
-        }, getSupportFragmentManager());
     }
 
     @Override
@@ -217,23 +208,6 @@ public class ReceiveFileActivity extends BaseActivity implements DirectActionLis
                 showToast("onFailure");
             }
         });
-    }
-
-    private void openFile(String filePath) {
-        String ext = filePath.substring(filePath.lastIndexOf('.')).toLowerCase(Locale.US);
-        try {
-            MimeTypeMap mimeTypeMap = MimeTypeMap.getSingleton();
-            String mime = mimeTypeMap.getMimeTypeFromExtension(ext.substring(1));
-            mime = TextUtils.isEmpty(mime) ? "" : mime;
-            Intent intent = new Intent();
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            intent.setAction(android.content.Intent.ACTION_VIEW);
-            intent.setDataAndType(Uri.fromFile(new File(filePath)), mime);
-            startActivity(intent);
-        } catch (Exception e) {
-            Log.e(TAG, "文件打开异常：" + e.getMessage());
-            showToast("文件打开异常：" + e.getMessage());
-        }
     }
 
 }

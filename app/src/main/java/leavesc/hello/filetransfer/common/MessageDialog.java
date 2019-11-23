@@ -3,12 +3,13 @@ package leavesc.hello.filetransfer.common;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.text.TextUtils;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.StringRes;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.FragmentManager;
-import androidx.appcompat.app.AlertDialog;
-import android.text.TextUtils;
 
 /**
  * 作者：叶应是叶

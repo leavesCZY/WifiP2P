@@ -1,10 +1,14 @@
 package leavesc.hello.filetransfer;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.wifi.p2p.WifiP2pDevice;
 import android.os.Bundle;
-import androidx.appcompat.app.AppCompatActivity;
 import android.view.View;
+
+import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
 
 /**
  * 作者：leavesC
@@ -13,7 +17,9 @@ import android.view.View;
  * GitHub：https://github.com/leavesC
  * Blog：https://www.jianshu.com/u/9df45b87cfdf
  */
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends BaseActivity {
+
+    private static final int CODE_REQ_PERMISSIONS = 665;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -21,12 +27,33 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
     }
 
-    public void sendFile(View view) {
+    public void startFileSenderActivity(View view) {
         startActivity(new Intent(this, SendFileActivity.class));
     }
 
-    public void receiveFile(View view) {
+    public void startFileReceiverActivity(View view) {
         startActivity(new Intent(this, ReceiveFileActivity.class));
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == CODE_REQ_PERMISSIONS) {
+            for (int grantResult : grantResults) {
+                if (grantResult != PackageManager.PERMISSION_GRANTED) {
+                    showToast("缺少权限，请先授予权限");
+                    return;
+                } else {
+                    showToast("已获得权限");
+                }
+            }
+        }
+    }
+
+    public void checkPermission(View view) {
+        ActivityCompat.requestPermissions(MainActivity.this,
+                new String[]{Manifest.permission.CHANGE_NETWORK_STATE, Manifest.permission.ACCESS_NETWORK_STATE, Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                        Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.ACCESS_WIFI_STATE, Manifest.permission.CHANGE_WIFI_STATE}, CODE_REQ_PERMISSIONS);
     }
 
     public static String getDeviceStatus(int deviceStatus) {

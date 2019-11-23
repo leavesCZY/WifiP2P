@@ -1,8 +1,10 @@
 package leavesc.hello.filetransfer;
 
 import android.annotation.SuppressLint;
-import androidx.appcompat.app.AppCompatActivity;
 import android.widget.Toast;
+
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
 
 import leavesc.hello.filetransfer.common.LoadingDialog;
 
@@ -17,6 +19,13 @@ import leavesc.hello.filetransfer.common.LoadingDialog;
 public class BaseActivity extends AppCompatActivity {
 
     private LoadingDialog loadingDialog;
+
+    protected void setTitle(String title) {
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setTitle(title);
+        }
+    }
 
     protected void showLoadingDialog(String message) {
         if (loadingDialog == null) {
