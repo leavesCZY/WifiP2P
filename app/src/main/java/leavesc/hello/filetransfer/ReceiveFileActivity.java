@@ -10,9 +10,9 @@ import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 
@@ -31,11 +31,58 @@ import leavesc.hello.filetransfer.service.WifiServerService;
  * GitHub：https://github.com/leavesC
  * Blog：https://www.jianshu.com/u/9df45b87cfdf
  */
-public class ReceiveFileActivity extends BaseActivity implements DirectActionListener {
+public class ReceiveFileActivity extends BaseActivity {
 
     private WifiP2pManager wifiP2pManager;
 
     private WifiP2pManager.Channel channel;
+
+    private boolean connectionInfoAvailable;
+
+    private DirectActionListener directActionListener = new DirectActionListener() {
+        @Override
+        public void wifiP2pEnabled(boolean enabled) {
+            log("wifiP2pEnabled: " + enabled);
+        }
+
+        @Override
+        public void onConnectionInfoAvailable(WifiP2pInfo wifiP2pInfo) {
+            log("onConnectionInfoAvailable");
+            log("isGroupOwner：" + wifiP2pInfo.isGroupOwner);
+            log("groupFormed：" + wifiP2pInfo.groupFormed);
+            if (wifiP2pInfo.groupFormed && wifiP2pInfo.isGroupOwner) {
+                connectionInfoAvailable = true;
+                if (wifiServerService != null) {
+                    startService(WifiServerService.class);
+                }
+            }
+        }
+
+        @Override
+        public void onDisconnection() {
+            connectionInfoAvailable = false;
+            log("onDisconnection");
+        }
+
+        @Override
+        public void onSelfDeviceAvailable(WifiP2pDevice wifiP2pDevice) {
+            log("onSelfDeviceAvailable");
+            log(wifiP2pDevice.toString());
+        }
+
+        @Override
+        public void onPeersAvailable(Collection<WifiP2pDevice> wifiP2pDeviceList) {
+            log("onPeersAvailable,size:" + wifiP2pDeviceList.size());
+            for (WifiP2pDevice wifiP2pDevice : wifiP2pDeviceList) {
+                log(wifiP2pDevice.toString());
+            }
+        }
+
+        @Override
+        public void onChannelDisconnected() {
+            log("onChannelDisconnected");
+        }
+    };
 
     private BroadcastReceiver broadcastReceiver;
 
@@ -86,9 +133,9 @@ public class ReceiveFileActivity extends BaseActivity implements DirectActionLis
         }
     };
 
-    private static final String TAG = "ReceiveFileActivity";
-
     private ImageView iv_image;
+
+    private TextView tv_log;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -100,8 +147,8 @@ public class ReceiveFileActivity extends BaseActivity implements DirectActionLis
             finish();
             return;
         }
-        channel = wifiP2pManager.initialize(this, getMainLooper(), this);
-        broadcastReceiver = new DirectBroadcastReceiver(wifiP2pManager, channel, this);
+        channel = wifiP2pManager.initialize(this, getMainLooper(), directActionListener);
+        broadcastReceiver = new DirectBroadcastReceiver(wifiP2pManager, channel, directActionListener);
         registerReceiver(broadcastReceiver, DirectBroadcastReceiver.getIntentFilter());
         bindService();
     }
@@ -109,6 +156,7 @@ public class ReceiveFileActivity extends BaseActivity implements DirectActionLis
     private void initView() {
         setTitle("接收文件");
         iv_image = findViewById(R.id.iv_image);
+        tv_log = findViewById(R.id.tv_log);
         progressDialog = new ProgressDialog(this);
         progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
         progressDialog.setCancelable(false);
@@ -125,60 +173,24 @@ public class ReceiveFileActivity extends BaseActivity implements DirectActionLis
             unbindService(serviceConnection);
         }
         unregisterReceiver(broadcastReceiver);
-        removeGroup();
         stopService(new Intent(this, WifiServerService.class));
-    }
-
-    @Override
-    public void wifiP2pEnabled(boolean enabled) {
-        Log.e(TAG, "wifiP2pEnabled: " + enabled);
-    }
-
-    @Override
-    public void onConnectionInfoAvailable(WifiP2pInfo wifiP2pInfo) {
-        Log.e(TAG, "onConnectionInfoAvailable");
-        Log.e(TAG, "isGroupOwner：" + wifiP2pInfo.isGroupOwner);
-        Log.e(TAG, "groupFormed：" + wifiP2pInfo.groupFormed);
-        if (wifiP2pInfo.groupFormed && wifiP2pInfo.isGroupOwner) {
-            if (wifiServerService != null) {
-                startService(new Intent(this, WifiServerService.class));
-            }
+        if (connectionInfoAvailable) {
+            removeGroup();
         }
     }
 
-    @Override
-    public void onDisconnection() {
-        Log.e(TAG, "onDisconnection");
-    }
-
-    @Override
-    public void onSelfDeviceAvailable(WifiP2pDevice wifiP2pDevice) {
-        Log.e(TAG, "onSelfDeviceAvailable");
-    }
-
-    @Override
-    public void onPeersAvailable(Collection<WifiP2pDevice> wifiP2pDeviceList) {
-        Log.e(TAG, "onPeersAvailable");
-    }
-
-    @Override
-    public void onChannelDisconnected() {
-        Log.e(TAG, "onChannelDisconnected");
-    }
-
     public void createGroup(View view) {
-        showLoadingDialog("正在创建群组");
         wifiP2pManager.createGroup(channel, new WifiP2pManager.ActionListener() {
             @Override
             public void onSuccess() {
-                Log.e(TAG, "createGroup onSuccess");
+                log("createGroup onSuccess");
                 dismissLoadingDialog();
                 showToast("onSuccess");
             }
 
             @Override
             public void onFailure(int reason) {
-                Log.e(TAG, "createGroup onFailure: " + reason);
+                log("createGroup onFailure: " + reason);
                 dismissLoadingDialog();
                 showToast("onFailure");
             }
@@ -189,25 +201,30 @@ public class ReceiveFileActivity extends BaseActivity implements DirectActionLis
         removeGroup();
     }
 
-    private void bindService() {
-        Intent intent = new Intent(ReceiveFileActivity.this, WifiServerService.class);
-        bindService(intent, serviceConnection, BIND_AUTO_CREATE);
-    }
-
     private void removeGroup() {
         wifiP2pManager.removeGroup(channel, new WifiP2pManager.ActionListener() {
             @Override
             public void onSuccess() {
-                Log.e(TAG, "removeGroup onSuccess");
+                log("removeGroup onSuccess");
                 showToast("onSuccess");
             }
 
             @Override
             public void onFailure(int reason) {
-                Log.e(TAG, "removeGroup onFailure");
+                log("removeGroup onFailure");
                 showToast("onFailure");
             }
         });
+    }
+
+    private void log(String log) {
+        tv_log.append(log + "\n");
+        tv_log.append("----------" + "\n");
+    }
+
+    private void bindService() {
+        Intent intent = new Intent(ReceiveFileActivity.this, WifiServerService.class);
+        bindService(intent, serviceConnection, BIND_AUTO_CREATE);
     }
 
 }

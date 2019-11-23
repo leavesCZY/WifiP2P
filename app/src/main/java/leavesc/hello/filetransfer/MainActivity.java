@@ -39,9 +39,10 @@ public class MainActivity extends BaseActivity {
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == CODE_REQ_PERMISSIONS) {
-            for (int grantResult : grantResults) {
-                if (grantResult != PackageManager.PERMISSION_GRANTED) {
+            for (int i = 0; i < grantResults.length; i++) {
+                if (grantResults[0] != PackageManager.PERMISSION_GRANTED) {
                     showToast("缺少权限，请先授予权限");
+                    showToast(permissions[i]);
                     return;
                 } else {
                     showToast("已获得权限");
@@ -53,7 +54,8 @@ public class MainActivity extends BaseActivity {
     public void checkPermission(View view) {
         ActivityCompat.requestPermissions(MainActivity.this,
                 new String[]{Manifest.permission.CHANGE_NETWORK_STATE, Manifest.permission.ACCESS_NETWORK_STATE, Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                        Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.ACCESS_WIFI_STATE, Manifest.permission.CHANGE_WIFI_STATE}, CODE_REQ_PERMISSIONS);
+                        Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.ACCESS_WIFI_STATE, Manifest.permission.CHANGE_WIFI_STATE,
+                        Manifest.permission.ACCESS_FINE_LOCATION}, CODE_REQ_PERMISSIONS);
     }
 
     public static String getDeviceStatus(int deviceStatus) {

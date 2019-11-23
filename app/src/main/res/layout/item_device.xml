@@ -4,16 +4,18 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="10dp"
+    android:layout_margin="6dp"
+    android:background="#63A8E9"
+    android:clickable="true"
+    android:focusable="true"
+    android:padding="6dp"
     app:cardCornerRadius="8dp"
-    app:cardElevation="0.5dp"
+    app:cardElevation="3dp"
     app:cardPreventCornerOverlap="true">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:clickable="true"
-        android:focusable="true"
         android:orientation="vertical">
 
         <TextView
@@ -21,6 +23,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
+            android:textColor="@android:color/black"
+            android:textSize="16sp"
             tools:text="Android N" />
 
         <TextView
@@ -28,12 +32,16 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
+            android:textColor="@android:color/black"
+            android:textSize="16sp"
             tools:text="192.168.0.1" />
 
         <TextView
             android:id="@+id/tv_deviceDetails"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:textColor="@android:color/black"
+            android:textSize="16sp"
             tools:text="可用的" />
 
     </LinearLayout>

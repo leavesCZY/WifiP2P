@@ -100,7 +100,7 @@ public class SendFileActivity extends BaseActivity {
             Log.e(TAG, "onDisconnection");
             btn_disconnect.setEnabled(false);
             btn_chooseFile.setEnabled(false);
-            showToast("已断开连接");
+            showToast("处于非连接状态");
             wifiP2pDeviceList.clear();
             deviceAdapter.notifyDataSetChanged();
             tv_status.setText(null);
@@ -141,8 +141,6 @@ public class SendFileActivity extends BaseActivity {
     private TextView tv_myDeviceStatus;
 
     private TextView tv_status;
-
-    private TextView tv_fileList;
 
     private List<WifiP2pDevice> wifiP2pDeviceList;
 
@@ -199,7 +197,6 @@ public class SendFileActivity extends BaseActivity {
         tv_myDeviceAddress = findViewById(R.id.tv_myDeviceAddress);
         tv_myDeviceStatus = findViewById(R.id.tv_myDeviceStatus);
         tv_status = findViewById(R.id.tv_status);
-        tv_fileList = findViewById(R.id.tv_fileList);
         btn_disconnect = findViewById(R.id.btn_disconnect);
         btn_chooseFile = findViewById(R.id.btn_chooseFile);
         btn_disconnect.setOnClickListener(clickListener);
@@ -212,7 +209,7 @@ public class SendFileActivity extends BaseActivity {
             @Override
             public void onItemClick(int position) {
                 mWifiP2pDevice = wifiP2pDeviceList.get(position);
-                showToast(wifiP2pDeviceList.get(position).deviceName);
+                showToast(mWifiP2pDevice.deviceName);
                 connect();
             }
         });

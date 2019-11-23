@@ -25,6 +25,15 @@ import leavesc.hello.filetransfer.callback.DirectActionListener;
  */
 public class DirectBroadcastReceiver extends BroadcastReceiver {
 
+    public static IntentFilter getIntentFilter() {
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
+        intentFilter.addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION);
+        intentFilter.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
+        intentFilter.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
+        return intentFilter;
+    }
+
     private static final String TAG = "DirectBroadcastReceiver";
 
     private WifiP2pManager mWifiP2pManager;
@@ -37,15 +46,6 @@ public class DirectBroadcastReceiver extends BroadcastReceiver {
         mWifiP2pManager = wifiP2pManager;
         mChannel = channel;
         mDirectActionListener = directActionListener;
-    }
-
-    public static IntentFilter getIntentFilter() {
-        IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
-        intentFilter.addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION);
-        intentFilter.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
-        intentFilter.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
-        return intentFilter;
     }
 
     @Override
@@ -94,7 +94,8 @@ public class DirectBroadcastReceiver extends BroadcastReceiver {
                 }
                 //本设备的设备信息发生了变化
                 case WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION: {
-                    mDirectActionListener.onSelfDeviceAvailable((WifiP2pDevice) intent.getParcelableExtra(WifiP2pManager.EXTRA_WIFI_P2P_DEVICE));
+                    WifiP2pDevice wifiP2pDevice = intent.getParcelableExtra(WifiP2pManager.EXTRA_WIFI_P2P_DEVICE);
+                    mDirectActionListener.onSelfDeviceAvailable(wifiP2pDevice);
                     break;
                 }
             }

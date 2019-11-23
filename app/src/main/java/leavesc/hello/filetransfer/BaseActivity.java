@@ -1,6 +1,9 @@
 package leavesc.hello.filetransfer;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.app.Service;
+import android.content.Intent;
 import android.widget.Toast;
 
 import androidx.appcompat.app.ActionBar;
@@ -38,6 +41,14 @@ public class BaseActivity extends AppCompatActivity {
         if (loadingDialog != null) {
             loadingDialog.dismiss();
         }
+    }
+
+    protected <T extends Activity> void startActivity(Class<T> tClass) {
+        startActivity(new Intent(this, tClass));
+    }
+
+    protected <T extends Service> void startService(Class<T> tClass) {
+        startService(new Intent(this, tClass));
     }
 
     protected void showToast(String message) {
