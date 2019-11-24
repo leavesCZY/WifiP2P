@@ -1,4 +1,4 @@
-最近的项目需要实现一个 Android 手机之间无网络传输文件的功能，就发现了 **Wifi P2P（Wifi点对点)** 这么一个功能，最后也实现了通过 **Wifi 隔空传输文件** 的功能，这里我也来整理下代码，分享给大家。
+最近的项目需要实现一个 Android 手机之间无网络传输文件的功能，就研究了下 **Wifi P2P（Wifi点对点)** 这么一个功能，最后也实现了通过 **Wifi 隔空传输文件** 的功能，这里我也来整理下代码，分享给大家。
 
 **Wifi P2P** 是在 **Android 4.0** 以及更高版本系统中加入的功能，通过 **Wifi P2P** 可以在**不连接网络**的情况下，直接与配对的设备进行数据交换。相对于蓝牙，**Wifi P2P** 的搜索速度和传输速度更快，传输距离更远
 
@@ -22,13 +22,14 @@
 Wifi P2P 技术并不会访问网络，但由于会使用到 **Java Socket**，所以需要申请网络权限。此外，由于是要实现文件互传，所以也需要申请SD卡读写权限。
 
 ```xml
-    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
-    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
     <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 ```
 
 ### 二、注册广播

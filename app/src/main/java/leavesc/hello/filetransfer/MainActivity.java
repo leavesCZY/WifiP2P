@@ -40,14 +40,13 @@ public class MainActivity extends BaseActivity {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == CODE_REQ_PERMISSIONS) {
             for (int i = 0; i < grantResults.length; i++) {
-                if (grantResults[0] != PackageManager.PERMISSION_GRANTED) {
+                if (grantResults[i] != PackageManager.PERMISSION_GRANTED) {
                     showToast("缺少权限，请先授予权限");
                     showToast(permissions[i]);
                     return;
-                } else {
-                    showToast("已获得权限");
                 }
             }
+            showToast("已获得权限");
         }
     }
 
