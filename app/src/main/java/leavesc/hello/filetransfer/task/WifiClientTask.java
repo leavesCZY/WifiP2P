@@ -86,7 +86,7 @@ public class WifiClientTask extends AsyncTask<String, Integer, Boolean> {
             Log.e(TAG, "文件发送成功");
             return true;
         } catch (Exception e) {
-            Log.e(TAG, "文件发送异常 Exception: " + e.getMessage());
+            Log.e(TAG, "文件发送异常: " + e.toString());
         } finally {
             if (socket != null && !socket.isClosed()) {
                 try {

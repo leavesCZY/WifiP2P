@@ -1,5 +1,6 @@
 package leavesc.hello.filetransfer;
 
+import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -179,6 +180,7 @@ public class ReceiveFileActivity extends BaseActivity {
         }
     }
 
+    @SuppressLint("MissingPermission")
     public void createGroup(View view) {
         wifiP2pManager.createGroup(channel, new WifiP2pManager.ActionListener() {
             @Override
