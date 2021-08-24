@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="leavesc.hello.filetransfer">
+    package="github.leavesc.filetransfer">
 
     <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
@@ -35,7 +35,7 @@
             android:exported="false" />
         <provider
             android:name="androidx.core.content.FileProvider"
-            android:authorities="leavesc.hello.filetransfer.fileprovider"
+            android:authorities="github.leavesc.filetransfer.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data
