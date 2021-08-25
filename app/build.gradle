@@ -3,7 +3,7 @@ apply plugin: 'com.android.application'
 android {
     compileSdkVersion 30
     defaultConfig {
-        applicationId "github.leavesc.filetransfer"
+        applicationId "github.leavesc.wifip2p"
         minSdkVersion 19
         targetSdkVersion 30
         versionCode 1
@@ -24,9 +24,7 @@ dependencies {
     androidTestImplementation 'androidx.test:runner:1.3.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
     implementation 'androidx.appcompat:appcompat:1.3.1'
-    implementation 'androidx.cardview:cardview:1.0.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
+    implementation 'com.google.android.material:material:1.4.0'
     implementation 'androidx.recyclerview:recyclerview:1.2.1'
     implementation 'com.github.bumptech.glide:glide:4.12.0'
-    implementation 'com.zhihu.android:matisse:0.5.3-beta3'
 }

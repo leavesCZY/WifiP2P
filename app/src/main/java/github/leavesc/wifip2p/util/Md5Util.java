@@ -1,4 +1,4 @@
-package github.leavesc.filetransfer.util;
+package github.leavesc.wifip2p.util;
 
 import java.io.File;
 import java.io.FileInputStream;

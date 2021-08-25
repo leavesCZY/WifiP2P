@@ -1,4 +1,4 @@
-package github.leavesc.filetransfer.adapter;
+package github.leavesc.wifip2p.adapter;
 
 import android.net.wifi.p2p.WifiP2pDevice;
 import android.view.LayoutInflater;
@@ -11,8 +11,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
 
-import github.leavesc.filetransfer.MainActivity;
-import github.leavesc.filetransfer.R;
+import github.leavesc.wifip2p.R;
+import github.leavesc.wifip2p.util.WifiP2pUtils;
 
 /**
  * @Author: leavesC
@@ -25,12 +25,6 @@ public class DeviceAdapter extends RecyclerView.Adapter<DeviceAdapter.ViewHolder
     private final List<WifiP2pDevice> wifiP2pDeviceList;
 
     private OnClickListener clickListener;
-
-    public interface OnClickListener {
-
-        void onItemClick(int position);
-
-    }
 
     public DeviceAdapter(List<WifiP2pDevice> wifiP2pDeviceList) {
         this.wifiP2pDeviceList = wifiP2pDeviceList;
@@ -52,7 +46,7 @@ public class DeviceAdapter extends RecyclerView.Adapter<DeviceAdapter.ViewHolder
     public void onBindViewHolder(@NonNull final ViewHolder holder, int position) {
         holder.tv_deviceName.setText(wifiP2pDeviceList.get(position).deviceName);
         holder.tv_deviceAddress.setText(wifiP2pDeviceList.get(position).deviceAddress);
-        holder.tv_deviceDetails.setText(MainActivity.getDeviceStatus(wifiP2pDeviceList.get(position).status));
+        holder.tv_deviceDetails.setText(WifiP2pUtils.getDeviceStatus(wifiP2pDeviceList.get(position).status));
         holder.itemView.setTag(position);
     }
 
@@ -63,6 +57,12 @@ public class DeviceAdapter extends RecyclerView.Adapter<DeviceAdapter.ViewHolder
 
     public void setClickListener(OnClickListener clickListener) {
         this.clickListener = clickListener;
+    }
+
+    public interface OnClickListener {
+
+        void onItemClick(int position);
+
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {

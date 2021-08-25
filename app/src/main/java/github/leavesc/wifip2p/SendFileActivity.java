@@ -1,14 +1,17 @@
-package github.leavesc.filetransfer;
+package github.leavesc.wifip2p;
 
+import android.Manifest;
 import android.content.BroadcastReceiver;
 import android.content.Intent;
-import android.content.pm.ActivityInfo;
+import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.net.wifi.WpsInfo;
 import android.net.wifi.p2p.WifiP2pConfig;
 import android.net.wifi.p2p.WifiP2pDevice;
 import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -16,25 +19,20 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import androidx.core.app.ActivityCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.zhihu.matisse.Matisse;
-import com.zhihu.matisse.MimeType;
-import com.zhihu.matisse.internal.entity.CaptureStrategy;
-
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import github.leavesc.filetransfer.adapter.DeviceAdapter;
-import github.leavesc.filetransfer.broadcast.DirectBroadcastReceiver;
-import github.leavesc.filetransfer.callback.DirectActionListener;
-import github.leavesc.filetransfer.common.Glide4Engine;
-import github.leavesc.filetransfer.common.LoadingDialog;
-import github.leavesc.filetransfer.model.FileTransfer;
-import github.leavesc.filetransfer.task.WifiClientTask;
+import github.leavesc.wifip2p.adapter.DeviceAdapter;
+import github.leavesc.wifip2p.broadcast.DirectBroadcastReceiver;
+import github.leavesc.wifip2p.callback.DirectActionListener;
+import github.leavesc.wifip2p.task.WifiClientTask;
+import github.leavesc.wifip2p.util.WifiP2pUtils;
+import github.leavesc.wifip2p.widget.LoadingDialog;
 
 /**
  * @Author: leavesC
@@ -55,6 +53,28 @@ public class SendFileActivity extends BaseActivity {
     private WifiP2pInfo wifiP2pInfo;
 
     private boolean wifiP2pEnabled = false;
+
+    private List<WifiP2pDevice> wifiP2pDeviceList;
+
+    private DeviceAdapter deviceAdapter;
+
+    private TextView tv_myDeviceName;
+
+    private TextView tv_myDeviceAddress;
+
+    private TextView tv_myDeviceStatus;
+
+    private TextView tv_status;
+
+    private Button btn_disconnect;
+
+    private Button btn_chooseFile;
+
+    private LoadingDialog loadingDialog;
+
+    private BroadcastReceiver broadcastReceiver;
+
+    private WifiP2pDevice mWifiP2pDevice;
 
     private final DirectActionListener directActionListener = new DirectActionListener() {
 
@@ -114,7 +134,7 @@ public class SendFileActivity extends BaseActivity {
             Log.e(TAG, "Status: " + wifiP2pDevice.status);
             tv_myDeviceName.setText(wifiP2pDevice.deviceName);
             tv_myDeviceAddress.setText(wifiP2pDevice.deviceAddress);
-            tv_myDeviceStatus.setText(MainActivity.getDeviceStatus(wifiP2pDevice.status));
+            tv_myDeviceStatus.setText(WifiP2pUtils.getDeviceStatus(wifiP2pDevice.status));
         }
 
         @Override
@@ -131,37 +151,6 @@ public class SendFileActivity extends BaseActivity {
             Log.e(TAG, "onChannelDisconnected");
         }
 
-    };
-
-    private TextView tv_myDeviceName;
-
-    private TextView tv_myDeviceAddress;
-
-    private TextView tv_myDeviceStatus;
-
-    private TextView tv_status;
-
-    private List<WifiP2pDevice> wifiP2pDeviceList;
-
-    private DeviceAdapter deviceAdapter;
-
-    private Button btn_disconnect;
-
-    private Button btn_chooseFile;
-
-    private LoadingDialog loadingDialog;
-
-    private BroadcastReceiver broadcastReceiver;
-
-    private WifiP2pDevice mWifiP2pDevice;
-
-    private final View.OnClickListener clickListener = v -> {
-        long id = v.getId();
-        if (id==R.id.btn_disconnect){
-            disconnect();
-        }else if (id==R.id.btn_chooseFile){
-            navToChose();
-        }
     };
 
     @Override
@@ -184,6 +173,14 @@ public class SendFileActivity extends BaseActivity {
     }
 
     private void initView() {
+        View.OnClickListener clickListener = v -> {
+            long id = v.getId();
+            if (id == R.id.btn_disconnect) {
+                disconnect();
+            } else if (id == R.id.btn_chooseFile) {
+                navToChosePicture();
+            }
+        };
         setTitle("发送文件");
         tv_myDeviceName = findViewById(R.id.tv_myDeviceName);
         tv_myDeviceAddress = findViewById(R.id.tv_myDeviceAddress);
@@ -197,13 +194,10 @@ public class SendFileActivity extends BaseActivity {
         RecyclerView rv_deviceList = findViewById(R.id.rv_deviceList);
         wifiP2pDeviceList = new ArrayList<>();
         deviceAdapter = new DeviceAdapter(wifiP2pDeviceList);
-        deviceAdapter.setClickListener(new DeviceAdapter.OnClickListener() {
-            @Override
-            public void onItemClick(int position) {
-                mWifiP2pDevice = wifiP2pDeviceList.get(position);
-                showToast(mWifiP2pDevice.deviceName);
-                connect();
-            }
+        deviceAdapter.setClickListener(position -> {
+            mWifiP2pDevice = wifiP2pDeviceList.get(position);
+            showToast(mWifiP2pDevice.deviceName);
+            connect();
         });
         rv_deviceList.setAdapter(deviceAdapter);
         rv_deviceList.setLayoutManager(new LinearLayoutManager(this));
@@ -218,21 +212,22 @@ public class SendFileActivity extends BaseActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == CODE_CHOOSE_FILE && resultCode == RESULT_OK) {
-            List<String> strings = Matisse.obtainPathResult(data);
-            if (strings != null && !strings.isEmpty()) {
-                String path = strings.get(0);
-                Log.e(TAG, "文件路径：" + path);
-                File file = new File(path);
-                if (file.exists() && wifiP2pInfo != null) {
-                    FileTransfer fileTransfer = new FileTransfer(file.getPath(), file.length());
-                    new WifiClientTask(this, fileTransfer).execute(wifiP2pInfo.groupOwnerAddress.getHostAddress());
+        if (requestCode == CODE_CHOOSE_FILE) {
+            if (resultCode == RESULT_OK) {
+                Uri imageUri = data.getData();
+                Log.e(TAG, "文件路径：" + imageUri);
+                if (wifiP2pInfo != null) {
+                    new WifiClientTask(this).execute(wifiP2pInfo.groupOwnerAddress.getHostAddress(), imageUri);
                 }
             }
         }
     }
 
     private void connect() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            showToast("请先授予位置权限");
+            return;
+        }
         WifiP2pConfig config = new WifiP2pConfig();
         if (config.deviceAddress != null && mWifiP2pDevice != null) {
             config.deviceAddress = mWifiP2pDevice.deviceAddress;
@@ -287,6 +282,10 @@ public class SendFileActivity extends BaseActivity {
             }
             return true;
         } else if (id == R.id.menuDirectDiscover) {
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                showToast("请先授予位置权限");
+                return true;
+            }
             if (!wifiP2pEnabled) {
                 showToast("需要先打开Wifi");
                 return true;
@@ -312,18 +311,10 @@ public class SendFileActivity extends BaseActivity {
         return true;
     }
 
-    private void navToChose() {
-        Matisse.from(this)
-                .choose(MimeType.ofImage())
-                .countable(true)
-                .showSingleMediaType(true)
-                .maxSelectable(1)
-                .capture(false)
-                .captureStrategy(new CaptureStrategy(true, BuildConfig.APPLICATION_ID + ".fileprovider"))
-                .restrictOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED)
-                .thumbnailScale(0.70f)
-                .imageEngine(new Glide4Engine())
-                .forResult(CODE_CHOOSE_FILE);
+    private void navToChosePicture() {
+        Intent intent = new Intent(Intent.ACTION_PICK, null);
+        intent.setDataAndType(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "image/*");
+        startActivityForResult(intent, CODE_CHOOSE_FILE);
     }
 
 }

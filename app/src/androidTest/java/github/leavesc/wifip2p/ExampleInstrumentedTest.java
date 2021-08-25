@@ -1,4 +1,4 @@
-package github.leavesc.filetransfer;
+package github.leavesc.wifip2p;
 
 import static org.junit.Assert.assertEquals;
 
@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
     public void useAppContext() {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getTargetContext();
-        assertEquals("github.leavesc.filetransfer", appContext.getPackageName());
+        assertEquals("github.leavesc.wifip2p", appContext.getPackageName());
     }
 }

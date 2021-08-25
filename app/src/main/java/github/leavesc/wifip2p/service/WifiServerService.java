@@ -1,9 +1,8 @@
-package github.leavesc.filetransfer.service;
+package github.leavesc.wifip2p.service;
 
 import android.app.IntentService;
 import android.content.Intent;
 import android.os.Binder;
-import android.os.Environment;
 import android.os.IBinder;
 import android.util.Log;
 
@@ -18,9 +17,9 @@ import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-import github.leavesc.filetransfer.common.Constants;
-import github.leavesc.filetransfer.model.FileTransfer;
-import github.leavesc.filetransfer.util.Md5Util;
+import github.leavesc.wifip2p.common.Constants;
+import github.leavesc.wifip2p.model.FileTransfer;
+import github.leavesc.wifip2p.util.Md5Util;
 
 /**
  * @Author: leavesC
@@ -32,16 +31,6 @@ public class WifiServerService extends IntentService {
 
     private static final String TAG = "WifiServerService";
 
-    public interface OnProgressChangListener {
-
-        //当传输进度发生变化时
-        void onProgressChanged(FileTransfer fileTransfer, int progress);
-
-        //当传输结束时
-        void onTransferFinished(File file);
-
-    }
-
     private ServerSocket serverSocket;
 
     private InputStream inputStream;
@@ -52,12 +41,6 @@ public class WifiServerService extends IntentService {
 
     private OnProgressChangListener progressChangListener;
 
-    public class MyBinder extends Binder {
-        public WifiServerService getService() {
-            return WifiServerService.this;
-        }
-    }
-
     public WifiServerService() {
         super("WifiServerService");
     }
@@ -65,7 +48,7 @@ public class WifiServerService extends IntentService {
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
-        return new MyBinder();
+        return new WifiServerBinder();
     }
 
     @Override
@@ -82,11 +65,11 @@ public class WifiServerService extends IntentService {
             objectInputStream = new ObjectInputStream(inputStream);
             FileTransfer fileTransfer = (FileTransfer) objectInputStream.readObject();
             Log.e(TAG, "待接收的文件: " + fileTransfer);
-            String name = new File(fileTransfer.getFilePath()).getName();
+            String name = fileTransfer.getFileName();
             //将文件存储至指定位置
-            file = new File(Environment.getExternalStorageDirectory() + "/" + name);
+            file = new File(getCacheDir(), name);
             fileOutputStream = new FileOutputStream(file);
-            byte[] buf = new byte[512];
+            byte[] buf = new byte[1024];
             int len;
             long total = 0;
             int progress;
@@ -162,6 +145,22 @@ public class WifiServerService extends IntentService {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+        }
+    }
+
+    public interface OnProgressChangListener {
+
+        //当传输进度发生变化时
+        void onProgressChanged(FileTransfer fileTransfer, int progress);
+
+        //当传输结束时
+        void onTransferFinished(File file);
+
+    }
+
+    public class WifiServerBinder extends Binder {
+        public WifiServerService getService() {
+            return WifiServerService.this;
         }
     }
 

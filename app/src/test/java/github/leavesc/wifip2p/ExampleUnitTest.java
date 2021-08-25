@@ -1,4 +1,4 @@
-package github.leavesc.filetransfer;
+package github.leavesc.wifip2p;
 
 import static org.junit.Assert.assertEquals;
 

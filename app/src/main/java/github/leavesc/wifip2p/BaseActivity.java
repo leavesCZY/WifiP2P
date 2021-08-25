@@ -1,4 +1,4 @@
-package github.leavesc.filetransfer;
+package github.leavesc.wifip2p;
 
 import android.app.Activity;
 import android.app.Service;
@@ -8,7 +8,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
-import github.leavesc.filetransfer.common.LoadingDialog;
+import github.leavesc.wifip2p.widget.LoadingDialog;
 
 /**
  * @Author: leavesC

@@ -1,4 +1,4 @@
-package github.leavesc.filetransfer.common;
+package github.leavesc.wifip2p.common;
 
 /**
  * @Author: leavesC

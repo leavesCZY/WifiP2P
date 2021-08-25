@@ -1,4 +1,4 @@
-package github.leavesc.filetransfer.common;
+package github.leavesc.wifip2p.widget;
 
 import android.app.Dialog;
 import android.content.Context;
@@ -9,7 +9,7 @@ import android.widget.TextView;
 
 import androidx.annotation.StringRes;
 
-import github.leavesc.filetransfer.R;
+import github.leavesc.wifip2p.R;
 
 /**
  * @Author: leavesC

@@ -3,13 +3,17 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
-        <entry key="..\:/Users/CZY/Desktop/WifiP2P/app/src/main/res/layout/activity_main.xml" value="0.25104166666666666" />
-        <entry key="..\:/Users/CZY/Desktop/WifiP2P/app/src/main/res/layout/activity_receive_file.xml" value="0.25104166666666666" />
-        <entry key="..\:/Users/CZY/Desktop/WifiP2P/app/src/main/res/layout/activity_send_file.xml" value="0.31875" />
-        <entry key="..\:/Users/CZY/Desktop/WifiP2P/app/src/main/res/layout/dialog_loading.xml" value="0.31875" />
-        <entry key="..\:/Users/CZY/Desktop/WifiP2P/app/src/main/res/layout/item_device.xml" value="0.32916666666666666" />
-        <entry key="..\:/Users/CZY/Desktop/WifiP2P/app/src/main/res/menu/action.xml" value="0.2828125" />
-        <entry key="..\:/Users/CZY/Desktop/WifiP2P/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml" value="0.29435897435897435" />
+        <entry key="..\:/Users/CZY/Desktop/WifiP2P/app/src/main/res/drawable-v24/ic_launcher_foreground.xml" value="0.31302083333333336" />
+        <entry key="..\:/Users/CZY/Desktop/WifiP2P/app/src/main/res/drawable/dialog_loading_bg.xml" value="0.31302083333333336" />
+        <entry key="..\:/Users/CZY/Desktop/WifiP2P/app/src/main/res/drawable/ic_launcher_background.xml" value="0.31302083333333336" />
+        <entry key="..\:/Users/CZY/Desktop/WifiP2P/app/src/main/res/layout/activity_main.xml" value="0.22" />
+        <entry key="..\:/Users/CZY/Desktop/WifiP2P/app/src/main/res/layout/activity_receive_file.xml" value="0.24427083333333333" />
+        <entry key="..\:/Users/CZY/Desktop/WifiP2P/app/src/main/res/layout/activity_send_file.xml" value="0.25" />
+        <entry key="..\:/Users/CZY/Desktop/WifiP2P/app/src/main/res/layout/dialog_loading.xml" value="0.2046875" />
+        <entry key="..\:/Users/CZY/Desktop/WifiP2P/app/src/main/res/layout/item_device.xml" value="0.25" />
+        <entry key="..\:/Users/CZY/Desktop/WifiP2P/app/src/main/res/menu/action.xml" value="0.35052083333333334" />
+        <entry key="..\:/Users/CZY/Desktop/WifiP2P/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml" value="0.30666666666666664" />
+        <entry key="..\:/Users/CZY/Desktop/WifiP2P/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml" value="0.30666666666666664" />
       </map>
     </option>
   </component>

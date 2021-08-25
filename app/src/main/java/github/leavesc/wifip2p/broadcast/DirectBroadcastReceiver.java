@@ -1,20 +1,23 @@
-package github.leavesc.filetransfer.broadcast;
+package github.leavesc.wifip2p.broadcast;
 
+import android.Manifest;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.net.NetworkInfo;
 import android.net.wifi.p2p.WifiP2pDevice;
-import android.net.wifi.p2p.WifiP2pDeviceList;
 import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.util.Log;
 
+import androidx.core.app.ActivityCompat;
+
 import java.util.ArrayList;
 import java.util.List;
 
-import github.leavesc.filetransfer.callback.DirectActionListener;
+import github.leavesc.wifip2p.callback.DirectActionListener;
 
 /**
  * @Author: leavesC
@@ -24,6 +27,17 @@ import github.leavesc.filetransfer.callback.DirectActionListener;
  */
 public class DirectBroadcastReceiver extends BroadcastReceiver {
 
+    private static final String TAG = "DirectBroadcastReceiver";
+    private final WifiP2pManager mWifiP2pManager;
+    private final WifiP2pManager.Channel mChannel;
+    private final DirectActionListener mDirectActionListener;
+
+    public DirectBroadcastReceiver(WifiP2pManager wifiP2pManager, WifiP2pManager.Channel channel, DirectActionListener directActionListener) {
+        mWifiP2pManager = wifiP2pManager;
+        mChannel = channel;
+        mDirectActionListener = directActionListener;
+    }
+
     public static IntentFilter getIntentFilter() {
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
@@ -31,20 +45,6 @@ public class DirectBroadcastReceiver extends BroadcastReceiver {
         intentFilter.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
         intentFilter.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
         return intentFilter;
-    }
-
-    private static final String TAG = "DirectBroadcastReceiver";
-
-    private final WifiP2pManager mWifiP2pManager;
-
-    private final WifiP2pManager.Channel mChannel;
-
-    private final DirectActionListener mDirectActionListener;
-
-    public DirectBroadcastReceiver(WifiP2pManager wifiP2pManager, WifiP2pManager.Channel channel, DirectActionListener directActionListener) {
-        mWifiP2pManager = wifiP2pManager;
-        mChannel = channel;
-        mDirectActionListener = directActionListener;
     }
 
     @Override
@@ -66,12 +66,10 @@ public class DirectBroadcastReceiver extends BroadcastReceiver {
                 }
                 // 对等节点列表发生了变化
                 case WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION: {
-                    mWifiP2pManager.requestPeers(mChannel, new WifiP2pManager.PeerListListener() {
-                        @Override
-                        public void onPeersAvailable(WifiP2pDeviceList peers) {
-                            mDirectActionListener.onPeersAvailable(peers.getDeviceList());
-                        }
-                    });
+                    if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                        return;
+                    }
+                    mWifiP2pManager.requestPeers(mChannel, peers -> mDirectActionListener.onPeersAvailable(peers.getDeviceList()));
                     break;
                 }
                 // Wifi P2P 的连接状态发生了改变

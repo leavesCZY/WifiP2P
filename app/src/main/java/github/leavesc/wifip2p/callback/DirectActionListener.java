@@ -1,4 +1,4 @@
-package github.leavesc.filetransfer.callback;
+package github.leavesc.wifip2p.callback;
 
 import android.net.wifi.p2p.WifiP2pDevice;
 import android.net.wifi.p2p.WifiP2pInfo;
