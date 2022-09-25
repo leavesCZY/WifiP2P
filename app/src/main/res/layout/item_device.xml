@@ -17,7 +17,7 @@
         android:orientation="vertical">
 
         <TextView
-            android:id="@+id/tv_deviceName"
+            android:id="@+id/tvDeviceName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
@@ -26,7 +26,7 @@
             tools:text="Android N" />
 
         <TextView
-            android:id="@+id/tv_deviceAddress"
+            android:id="@+id/tvDeviceAddress"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
@@ -35,7 +35,7 @@
             tools:text="192.168.0.1" />
 
         <TextView
-            android:id="@+id/tv_deviceDetails"
+            android:id="@+id/tvDeviceDetails"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textColor="@android:color/black"

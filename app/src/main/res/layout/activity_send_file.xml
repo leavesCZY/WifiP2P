@@ -12,7 +12,7 @@
         android:orientation="horizontal">
 
         <Button
-            android:id="@+id/btn_disconnect"
+            android:id="@+id/btnDisconnect"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginEnd="10dp"
@@ -20,7 +20,7 @@
             android:text="断开连接" />
 
         <Button
-            android:id="@+id/btn_chooseFile"
+            android:id="@+id/btnChooseFile"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="10dp"
@@ -39,7 +39,7 @@
         android:textStyle="bold" />
 
     <TextView
-        android:id="@+id/tv_myDeviceName"
+        android:id="@+id/tvMyDeviceName"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="6dp"
@@ -48,7 +48,7 @@
         tools:text="小米5X" />
 
     <TextView
-        android:id="@+id/tv_myDeviceAddress"
+        android:id="@+id/tvMyDeviceAddress"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="6dp"
@@ -57,7 +57,7 @@
         tools:text="192.168.0.1" />
 
     <TextView
-        android:id="@+id/tv_myDeviceStatus"
+        android:id="@+id/tvMyDeviceStatus"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="6dp"
@@ -66,7 +66,7 @@
         tools:text="可用的" />
 
     <TextView
-        android:id="@+id/tv_status"
+        android:id="@+id/tvStatus"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="6dp"
@@ -84,7 +84,7 @@
         android:textStyle="bold" />
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rv_deviceList"
+        android:id="@+id/rvDeviceList"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
