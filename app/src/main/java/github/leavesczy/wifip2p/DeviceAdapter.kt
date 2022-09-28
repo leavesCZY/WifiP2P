@@ -12,37 +12,35 @@ import github.leavesczy.wifip2p.utils.WifiP2pUtils
  * @Author: leavesCZY
  * @Desc:
  */
+
+interface OnItemClickListener {
+
+    fun onItemClick(position: Int)
+
+}
+
 class DeviceAdapter(private val wifiP2pDeviceList: List<WifiP2pDevice>) :
     RecyclerView.Adapter<DeviceAdapter.ViewHolder>() {
 
-    private var clickListener: OnClickListener? = null
+    var onItemClickListener: OnItemClickListener? = null
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item_device, parent, false)
-        view.setOnClickListener { v: View ->
-            clickListener?.onItemClick(v.tag as Int)
-        }
         return ViewHolder(view)
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.tvDeviceName.text = wifiP2pDeviceList[position].deviceName
-        holder.tvDeviceAddress.text = wifiP2pDeviceList[position].deviceAddress
-        holder.tvDeviceDetails.text =
-            WifiP2pUtils.getDeviceStatus(wifiP2pDeviceList[position].status)
-        holder.itemView.tag = position
+        val device = wifiP2pDeviceList[position]
+        holder.tvDeviceName.text = device.deviceName
+        holder.tvDeviceAddress.text = device.deviceAddress
+        holder.tvDeviceDetails.text = WifiP2pUtils.getDeviceStatus(deviceStatus = device.status)
+        holder.itemView.setOnClickListener {
+            onItemClickListener?.onItemClick(position = position)
+        }
     }
 
     override fun getItemCount(): Int {
         return wifiP2pDeviceList.size
-    }
-
-    fun setClickListener(clickListener: OnClickListener) {
-        this.clickListener = clickListener
-    }
-
-    interface OnClickListener {
-        fun onItemClick(position: Int)
     }
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {

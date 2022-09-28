@@ -12,38 +12,47 @@
         android:orientation="horizontal">
 
         <Button
+            android:id="@+id/btnDirectDiscover"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:layout_weight="1"
+            android:text="搜索设备" />
+
+        <Button
             android:id="@+id/btnDisconnect"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="10dp"
+            android:layout_margin="5dp"
             android:layout_weight="1"
             android:text="断开连接" />
 
-        <Button
-            android:id="@+id/btnChooseFile"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="10dp"
-            android:layout_weight="1"
-            android:text="选择文件" />
-
     </LinearLayout>
+
+    <Button
+        android:id="@+id/btnChooseFile"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="5dp"
+        android:enabled="false"
+        android:text="选择文件" />
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_margin="10dp"
         android:layout_marginTop="6dp"
         android:text="本设备信息"
-        android:textColor="@android:color/black"
-        android:textSize="18sp"
-        android:textStyle="bold" />
+        android:textColor="@color/black"
+        android:textSize="18sp" />
 
     <TextView
         android:id="@+id/tvMyDeviceName"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_margin="10dp"
         android:layout_marginTop="6dp"
-        android:textColor="@android:color/black"
+        android:textColor="@color/black"
         android:textSize="18sp"
         tools:text="小米5X" />
 
@@ -51,8 +60,9 @@
         android:id="@+id/tvMyDeviceAddress"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_margin="10dp"
         android:layout_marginTop="6dp"
-        android:textColor="@android:color/black"
+        android:textColor="@color/black"
         android:textSize="18sp"
         tools:text="192.168.0.1" />
 
@@ -60,8 +70,9 @@
         android:id="@+id/tvMyDeviceStatus"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_margin="10dp"
         android:layout_marginTop="6dp"
-        android:textColor="@android:color/black"
+        android:textColor="@color/black"
         android:textSize="18sp"
         tools:text="可用的" />
 
@@ -69,17 +80,19 @@
         android:id="@+id/tvStatus"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_margin="10dp"
         android:layout_marginTop="6dp"
-        android:textColor="@android:color/black"
+        android:textColor="@color/black"
         android:textSize="18sp"
         tools:text="连接状态" />
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_margin="10dp"
         android:layout_marginTop="12dp"
         android:text="设备列表"
-        android:textColor="@android:color/black"
+        android:textColor="@color/black"
         android:textSize="18sp"
         android:textStyle="bold" />
 
