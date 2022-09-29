@@ -12,16 +12,18 @@ import android.widget.Button
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import github.leavesczy.wifip2p.BaseActivity
 import github.leavesczy.wifip2p.DeviceAdapter
 import github.leavesczy.wifip2p.DirectActionListener
 import github.leavesczy.wifip2p.DirectBroadcastReceiver
-import github.leavesczy.wifip2p.Logger
 import github.leavesczy.wifip2p.OnItemClickListener
 import github.leavesczy.wifip2p.R
+import github.leavesczy.wifip2p.models.ViewState
 import github.leavesczy.wifip2p.utils.WifiP2pUtils
+import kotlinx.coroutines.launch
 
 /**
  * @Author: leavesCZY
@@ -30,20 +32,12 @@ import github.leavesczy.wifip2p.utils.WifiP2pUtils
 @SuppressLint("NotifyDataSetChanged")
 class FileSenderActivity : BaseActivity() {
 
-    private val tvMyDeviceName by lazy {
-        findViewById<TextView>(R.id.tvMyDeviceName)
+    private val tvDeviceState by lazy {
+        findViewById<TextView>(R.id.tvDeviceState)
     }
 
-    private val tvMyDeviceAddress by lazy {
-        findViewById<TextView>(R.id.tvMyDeviceAddress)
-    }
-
-    private val tvMyDeviceStatus by lazy {
-        findViewById<TextView>(R.id.tvMyDeviceStatus)
-    }
-
-    private val tvStatus by lazy {
-        findViewById<TextView>(R.id.tvStatus)
+    private val tvConnectionStatus by lazy {
+        findViewById<TextView>(R.id.tvConnectionStatus)
     }
 
     private val btnDisconnect by lazy {
@@ -58,6 +52,10 @@ class FileSenderActivity : BaseActivity() {
         findViewById<RecyclerView>(R.id.rvDeviceList)
     }
 
+    private val tvLog by lazy {
+        findViewById<TextView>(R.id.tvLog)
+    }
+
     private val btnDirectDiscover by lazy {
         findViewById<Button>(R.id.btnDirectDiscover)
     }
@@ -69,7 +67,7 @@ class FileSenderActivity : BaseActivity() {
     ) { imageUri ->
         if (imageUri != null) {
             val ipAddress = wifiP2pInfo?.groupOwnerAddress?.hostAddress
-            Logger.log("getContentLaunch $imageUri $ipAddress")
+            log("getContentLaunch $imageUri $ipAddress")
             if (!ipAddress.isNullOrBlank()) {
                 fileSenderViewModel.send(ipAddress = ipAddress, fileUri = imageUri)
             }
@@ -102,12 +100,10 @@ class FileSenderActivity : BaseActivity() {
             deviceAdapter.notifyDataSetChanged()
             btnDisconnect.isEnabled = true
             btnChooseFile.isEnabled = true
-            Logger.log("onConnectionInfoAvailable")
-            Logger.log("onConnectionInfoAvailable groupFormed: " + wifiP2pInfo.groupFormed)
-            Logger.log("onConnectionInfoAvailable isGroupOwner: " + wifiP2pInfo.isGroupOwner)
-            Logger.log(
-                "onConnectionInfoAvailable getHostAddress: " + wifiP2pInfo.groupOwnerAddress.hostAddress
-            )
+            log("onConnectionInfoAvailable")
+            log("onConnectionInfoAvailable groupFormed: " + wifiP2pInfo.groupFormed)
+            log("onConnectionInfoAvailable isGroupOwner: " + wifiP2pInfo.isGroupOwner)
+            log("onConnectionInfoAvailable getHostAddress: " + wifiP2pInfo.groupOwnerAddress.hostAddress)
             val stringBuilder = StringBuilder()
             stringBuilder.append("\n")
             stringBuilder.append("是否群主：")
@@ -115,35 +111,36 @@ class FileSenderActivity : BaseActivity() {
             stringBuilder.append("\n")
             stringBuilder.append("群主IP地址：")
             stringBuilder.append(wifiP2pInfo.groupOwnerAddress.hostAddress)
-            tvStatus.text = stringBuilder
+            tvConnectionStatus.text = stringBuilder
             if (wifiP2pInfo.groupFormed && !wifiP2pInfo.isGroupOwner) {
                 this@FileSenderActivity.wifiP2pInfo = wifiP2pInfo
             }
         }
 
         override fun onDisconnection() {
-            Logger.log("onDisconnection")
+            log("onDisconnection")
             btnDisconnect.isEnabled = false
             btnChooseFile.isEnabled = false
-            showToast("处于非连接状态")
             wifiP2pDeviceList.clear()
             deviceAdapter.notifyDataSetChanged()
-            tvStatus.text = null
+            tvConnectionStatus.text = null
             wifiP2pInfo = null
+            showToast("处于非连接状态")
         }
 
         override fun onSelfDeviceAvailable(wifiP2pDevice: WifiP2pDevice) {
-            Logger.log("onSelfDeviceAvailable")
-            Logger.log("DeviceName: " + wifiP2pDevice.deviceName)
-            Logger.log("DeviceAddress: " + wifiP2pDevice.deviceAddress)
-            Logger.log("Status: " + wifiP2pDevice.status)
-            tvMyDeviceName.text = wifiP2pDevice.deviceName
-            tvMyDeviceAddress.text = wifiP2pDevice.deviceAddress
-            tvMyDeviceStatus.text = WifiP2pUtils.getDeviceStatus(wifiP2pDevice.status)
+            log("onSelfDeviceAvailable")
+            log("DeviceName: " + wifiP2pDevice.deviceName)
+            log("DeviceAddress: " + wifiP2pDevice.deviceAddress)
+            log("Status: " + wifiP2pDevice.status)
+            val log = "deviceName：" + wifiP2pDevice.deviceName + "\n" +
+                    "deviceAddress：" + wifiP2pDevice.deviceAddress + "\n" +
+                    "deviceStatus：" + WifiP2pUtils.getDeviceStatus(wifiP2pDevice.status)
+            tvDeviceState.text = log
         }
 
         override fun onPeersAvailable(wifiP2pDeviceList: Collection<WifiP2pDevice>) {
-            Logger.log("onPeersAvailable :" + wifiP2pDeviceList.size)
+            log("onPeersAvailable :" + wifiP2pDeviceList.size)
             this@FileSenderActivity.wifiP2pDeviceList.clear()
             this@FileSenderActivity.wifiP2pDeviceList.addAll(wifiP2pDeviceList)
             deviceAdapter.notifyDataSetChanged()
@@ -151,7 +148,7 @@ class FileSenderActivity : BaseActivity() {
         }
 
         override fun onChannelDisconnected() {
-            Logger.log("onChannelDisconnected")
+            log("onChannelDisconnected")
         }
     }
 
@@ -160,6 +157,7 @@ class FileSenderActivity : BaseActivity() {
         setContentView(R.layout.activity_file_sender)
         initView()
         initDevice()
+        initEvent()
     }
 
     @SuppressLint("MissingPermission")
@@ -200,7 +198,11 @@ class FileSenderActivity : BaseActivity() {
             }
         }
         rvDeviceList.adapter = deviceAdapter
-        rvDeviceList.layoutManager = LinearLayoutManager(this)
+        rvDeviceList.layoutManager = object : LinearLayoutManager(this) {
+            override fun canScrollVertically(): Boolean {
+                return false
+            }
+        }
     }
 
     private fun initDevice() {
@@ -214,6 +216,40 @@ class FileSenderActivity : BaseActivity() {
         broadcastReceiver =
             DirectBroadcastReceiver(mWifiP2pManager, wifiP2pChannel, directActionListener)
         registerReceiver(broadcastReceiver, DirectBroadcastReceiver.getIntentFilter())
+    }
+
+    private fun initEvent() {
+        lifecycleScope.launch {
+            fileSenderViewModel.viewState.collect {
+                when (it) {
+                    ViewState.Idle -> {
+                        clearLog()
+                        dismissLoadingDialog()
+                    }
+
+                    ViewState.Connecting -> {
+                        showLoadingDialog(message = "")
+                    }
+
+                    is ViewState.Receiving -> {
+                        showLoadingDialog(message = "")
+                    }
+
+                    is ViewState.Success -> {
+                        dismissLoadingDialog()
+                    }
+
+                    is ViewState.Failed -> {
+                        dismissLoadingDialog()
+                    }
+                }
+            }
+        }
+        lifecycleScope.launch {
+            fileSenderViewModel.log.collect {
+                log(it)
+            }
+        }
     }
 
     override fun onDestroy() {
@@ -233,7 +269,7 @@ class FileSenderActivity : BaseActivity() {
         wifiP2pManager.connect(wifiP2pChannel, wifiP2pConfig,
             object : WifiP2pManager.ActionListener {
                 override fun onSuccess() {
-                    Logger.log("connect onSuccess")
+                    log("connect onSuccess")
                 }
 
                 override fun onFailure(reason: Int) {
@@ -244,18 +280,28 @@ class FileSenderActivity : BaseActivity() {
     }
 
     private fun disconnect() {
-        wifiP2pManager.removeGroup(wifiP2pChannel, object : WifiP2pManager.ActionListener {
+        wifiP2pManager.cancelConnect(wifiP2pChannel, object : WifiP2pManager.ActionListener {
             override fun onFailure(reasonCode: Int) {
-                Logger.log("disconnect onFailure:$reasonCode")
+                log("cancelConnect onFailure:$reasonCode")
             }
 
             override fun onSuccess() {
-                Logger.log("disconnect onSuccess")
-                tvStatus.text = null
+                log("cancelConnect onSuccess")
+                tvConnectionStatus.text = null
                 btnDisconnect.isEnabled = false
                 btnChooseFile.isEnabled = false
             }
         })
+        wifiP2pManager.removeGroup(wifiP2pChannel, null)
+    }
+
+    private fun log(log: String) {
+        tvLog.append(log)
+        tvLog.append("\n\n")
+    }
+
+    private fun clearLog() {
+        tvLog.text = ""
     }
 
 }

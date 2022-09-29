@@ -18,6 +18,8 @@ import github.leavesczy.wifip2p.DirectBroadcastReceiver
 import github.leavesczy.wifip2p.R
 import github.leavesczy.wifip2p.models.ViewState
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlin.coroutines.resume
 
 /**
  * @Author: leavesCZY
@@ -132,7 +134,7 @@ class FileReceiverActivity : BaseActivity() {
             fileReceiverViewModel.viewState.collect {
                 when (it) {
                     ViewState.Idle -> {
-                        tvLog.text = ""
+                        clearLog()
                         dismissLoadingDialog()
                     }
 
@@ -167,45 +169,70 @@ class FileReceiverActivity : BaseActivity() {
         if (broadcastReceiver != null) {
             unregisterReceiver(broadcastReceiver)
         }
-        wifiP2pManager.removeGroup(wifiP2pChannel, null)
+        removeGroup()
     }
 
     @SuppressLint("MissingPermission")
     private fun createGroup() {
-        wifiP2pManager.createGroup(wifiP2pChannel, object : WifiP2pManager.ActionListener {
-            override fun onSuccess() {
-                val log = "createGroup onSuccess"
-                log(log = log)
-                showToast(message = log)
-            }
+        lifecycleScope.launch {
+            removeGroupIfNeed()
+            wifiP2pManager.createGroup(wifiP2pChannel, object : WifiP2pManager.ActionListener {
+                override fun onSuccess() {
+                    val log = "createGroup onSuccess"
+                    log(log = log)
+                    showToast(message = log)
+                }
 
-            override fun onFailure(reason: Int) {
-                val log = "createGroup onFailure: $reason"
-                log(log = log)
-                showToast(message = log)
-            }
-        })
+                override fun onFailure(reason: Int) {
+                    val log = "createGroup onFailure: $reason"
+                    log(log = log)
+                    showToast(message = log)
+                }
+            })
+        }
     }
 
     private fun removeGroup() {
-        wifiP2pManager.removeGroup(wifiP2pChannel, object : WifiP2pManager.ActionListener {
-            override fun onSuccess() {
-                val log = "removeGroup onSuccess"
-                log(log = log)
-                showToast(message = log)
-            }
+        lifecycleScope.launch {
+            removeGroupIfNeed()
+        }
+    }
 
-            override fun onFailure(reason: Int) {
-                val log = "removeGroup onFailure: $reason"
-                log(log = log)
-                showToast(message = log)
+    @SuppressLint("MissingPermission")
+    private suspend fun removeGroupIfNeed() {
+        return suspendCancellableCoroutine { continuation ->
+            wifiP2pManager.requestGroupInfo(wifiP2pChannel) { group ->
+                if (group == null) {
+                    continuation.resume(value = Unit)
+                } else {
+                    wifiP2pManager.removeGroup(wifiP2pChannel,
+                        object : WifiP2pManager.ActionListener {
+                            override fun onSuccess() {
+                                val log = "removeGroup onSuccess"
+                                log(log = log)
+                                showToast(message = log)
+                                continuation.resume(value = Unit)
+                            }
+
+                            override fun onFailure(reason: Int) {
+                                val log = "removeGroup onFailure: $reason"
+                                log(log = log)
+                                showToast(message = log)
+                                continuation.resume(value = Unit)
+                            }
+                        })
+                }
             }
-        })
+        }
     }
 
     private fun log(log: String) {
         tvLog.append(log)
         tvLog.append("\n\n")
+    }
+
+    private fun clearLog() {
+        tvLog.text = ""
     }
 
 }

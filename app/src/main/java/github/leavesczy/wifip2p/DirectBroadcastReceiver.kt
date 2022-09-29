@@ -80,7 +80,9 @@ class DirectBroadcastReceiver(
 
                 if (networkInfo != null && networkInfo.isConnected) {
                     wifiP2pManager.requestConnectionInfo(wifiP2pChannel) { info ->
-                        directActionListener.onConnectionInfoAvailable(info)
+                        if (info != null) {
+                            directActionListener.onConnectionInfoAvailable(info)
+                        }
                     }
                     Logger.log("已连接 P2P 设备")
                 } else {
