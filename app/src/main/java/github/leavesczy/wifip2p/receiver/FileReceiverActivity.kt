@@ -10,13 +10,14 @@ import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.activity.viewModels
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import coil.load
 import github.leavesczy.wifip2p.BaseActivity
 import github.leavesczy.wifip2p.DirectActionListener
 import github.leavesczy.wifip2p.DirectBroadcastReceiver
 import github.leavesczy.wifip2p.R
-import github.leavesczy.wifip2p.models.ViewState
+import github.leavesczy.wifip2p.common.FileTransferViewState
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
@@ -126,40 +127,47 @@ class FileReceiverActivity : BaseActivity() {
             wifiP2pChannel = wifiP2pChannel,
             directActionListener = directActionListener
         )
-        registerReceiver(broadcastReceiver, DirectBroadcastReceiver.getIntentFilter())
+        ContextCompat.registerReceiver(
+            this,
+            broadcastReceiver,
+            DirectBroadcastReceiver.getIntentFilter(),
+            ContextCompat.RECEIVER_NOT_EXPORTED
+        )
     }
 
     private fun initEvent() {
         lifecycleScope.launch {
-            fileReceiverViewModel.viewState.collect {
-                when (it) {
-                    ViewState.Idle -> {
-                        clearLog()
-                        dismissLoadingDialog()
-                    }
+            launch {
+                fileReceiverViewModel.fileTransferViewState.collect {
+                    when (it) {
+                        FileTransferViewState.Idle -> {
+                            clearLog()
+                            dismissLoadingDialog()
+                        }
 
-                    ViewState.Connecting -> {
-                        showLoadingDialog(message = "")
-                    }
+                        FileTransferViewState.Connecting -> {
+                            showLoadingDialog(message = "")
+                        }
 
-                    is ViewState.Receiving -> {
-                        showLoadingDialog(message = "")
-                    }
+                        is FileTransferViewState.Receiving -> {
+                            showLoadingDialog(message = "")
+                        }
 
-                    is ViewState.Success -> {
-                        dismissLoadingDialog()
-                        ivImage.load(data = it.file)
-                    }
+                        is FileTransferViewState.Success -> {
+                            dismissLoadingDialog()
+                            ivImage.load(data = it.file)
+                        }
 
-                    is ViewState.Failed -> {
-                        dismissLoadingDialog()
+                        is FileTransferViewState.Failed -> {
+                            dismissLoadingDialog()
+                        }
                     }
                 }
             }
-        }
-        lifecycleScope.launch {
-            fileReceiverViewModel.log.collect {
-                log(it)
+            launch {
+                fileReceiverViewModel.log.collect {
+                    log(it)
+                }
             }
         }
     }

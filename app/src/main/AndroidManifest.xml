@@ -19,21 +19,20 @@
         tools:targetApi="s" />
 
     <application
-        android:allowBackup="true"
-        android:dataExtractionRules="@xml/data_extraction_rules"
-        android:fullBackupContent="@xml/backup_rules"
+        android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.WifiP2P"
-        tools:targetApi="33">
+        tools:ignore="DataExtractionRules"
+        tools:targetApi="34">
         <activity
             android:name=".MainActivity"
-            android:configChanges="keyboard|keyboardHidden|screenLayout|screenSize|orientation|uiMode"
+            android:configChanges="orientation|screenSize|screenLayout|layoutDirection|uiMode|locale|keyboard|keyboardHidden"
             android:exported="true"
             android:screenOrientation="portrait"
-            tools:ignore="LockedOrientationActivity">
+            tools:ignore="DiscouragedApi,LockedOrientationActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -42,16 +41,16 @@
         </activity>
         <activity
             android:name=".sender.FileSenderActivity"
-            android:configChanges="keyboard|keyboardHidden|screenLayout|screenSize|orientation|uiMode"
+            android:configChanges="orientation|screenSize|screenLayout|layoutDirection|uiMode|locale|keyboard|keyboardHidden"
             android:exported="false"
             android:screenOrientation="portrait"
-            tools:ignore="LockedOrientationActivity" />
+            tools:ignore="DiscouragedApi,LockedOrientationActivity" />
         <activity
             android:name=".receiver.FileReceiverActivity"
-            android:configChanges="keyboard|keyboardHidden|screenLayout|screenSize|orientation|uiMode"
+            android:configChanges="orientation|screenSize|screenLayout|layoutDirection|uiMode|locale|keyboard|keyboardHidden"
             android:exported="false"
             android:screenOrientation="portrait"
-            tools:ignore="LockedOrientationActivity" />
+            tools:ignore="DiscouragedApi,LockedOrientationActivity" />
     </application>
 
 </manifest>

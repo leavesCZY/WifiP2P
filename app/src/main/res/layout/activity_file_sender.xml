@@ -14,7 +14,6 @@
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
             android:text="@string/tips"
-            android:textColor="@color/black"
             android:textSize="18sp" />
 
         <LinearLayout
@@ -28,7 +27,8 @@
                 android:layout_height="wrap_content"
                 android:layout_margin="5dp"
                 android:layout_weight="1"
-                android:text="搜索设备" />
+                android:text="搜索设备"
+                tools:ignore="HardcodedText" />
 
             <Button
                 android:id="@+id/btnDisconnect"
@@ -36,7 +36,8 @@
                 android:layout_height="wrap_content"
                 android:layout_margin="5dp"
                 android:layout_weight="1"
-                android:text="断开连接" />
+                android:text="断开连接"
+                tools:ignore="HardcodedText" />
 
         </LinearLayout>
 
@@ -46,23 +47,23 @@
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
             android:enabled="false"
-            android:text="选择文件" />
+            android:text="选择文件"
+            tools:ignore="HardcodedText" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="10dp"
             android:text="本设备的信息"
-            android:textColor="@color/black"
             android:textSize="20sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            tools:ignore="HardcodedText" />
 
         <TextView
             android:id="@+id/tvDeviceState"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="10dp"
-            android:textColor="@color/black"
             android:textSize="18sp"
             tools:text="小米5X" />
 
@@ -71,7 +72,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="10dp"
-            android:textColor="@color/black"
             android:textSize="18sp"
             tools:text="连接状态" />
 
@@ -80,9 +80,9 @@
             android:layout_height="wrap_content"
             android:layout_margin="10dp"
             android:text="设备列表"
-            android:textColor="@color/black"
             android:textSize="20sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            tools:ignore="HardcodedText" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rvDeviceList"
@@ -94,7 +94,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="10dp"
-            android:textColor="@color/black"
             android:textSize="18sp" />
 
     </LinearLayout>

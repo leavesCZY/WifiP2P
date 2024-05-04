@@ -66,9 +66,7 @@ class DirectBroadcastReceiver(
             WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION -> {
                 Logger.log("WIFI_P2P_PEERS_CHANGED_ACTION")
                 wifiP2pManager.requestPeers(wifiP2pChannel) { peers ->
-                    directActionListener.onPeersAvailable(
-                        peers.deviceList
-                    )
+                    directActionListener.onPeersAvailable(peers.deviceList)
                 }
             }
 

@@ -17,24 +17,18 @@ import github.leavesczy.wifip2p.sender.FileSenderActivity
  */
 class MainActivity : BaseActivity() {
 
-    private val requestedPermissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-        arrayOf(
-            Manifest.permission.ACCESS_NETWORK_STATE,
-            Manifest.permission.CHANGE_NETWORK_STATE,
-            Manifest.permission.ACCESS_WIFI_STATE,
-            Manifest.permission.CHANGE_WIFI_STATE,
-            Manifest.permission.NEARBY_WIFI_DEVICES
-        )
-    } else {
-        arrayOf(
-            Manifest.permission.ACCESS_NETWORK_STATE,
-            Manifest.permission.CHANGE_NETWORK_STATE,
-            Manifest.permission.ACCESS_WIFI_STATE,
-            Manifest.permission.CHANGE_WIFI_STATE,
-            Manifest.permission.ACCESS_COARSE_LOCATION,
-            Manifest.permission.ACCESS_FINE_LOCATION
-        )
-    }
+    private val requestedPermissions = buildList {
+        add(Manifest.permission.ACCESS_NETWORK_STATE)
+        add(Manifest.permission.CHANGE_NETWORK_STATE)
+        add(Manifest.permission.ACCESS_WIFI_STATE)
+        add(Manifest.permission.CHANGE_WIFI_STATE)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            add(Manifest.permission.NEARBY_WIFI_DEVICES)
+        } else {
+            add(Manifest.permission.ACCESS_COARSE_LOCATION)
+            add(Manifest.permission.ACCESS_FINE_LOCATION)
+        }
+    }.toTypedArray()
 
     private val requestPermissionLaunch = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
@@ -74,11 +68,7 @@ class MainActivity : BaseActivity() {
 
     private fun allPermissionGranted(): Boolean {
         requestedPermissions.forEach {
-            if (ActivityCompat.checkSelfPermission(
-                    this,
-                    it
-                ) != PackageManager.PERMISSION_GRANTED
-            ) {
+            if (ActivityCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED) {
                 return false
             }
         }

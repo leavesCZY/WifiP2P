@@ -7,9 +7,9 @@ import androidx.core.net.toFile
 import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import github.leavesczy.wifip2p.Constants
-import github.leavesczy.wifip2p.models.FileTransfer
-import github.leavesczy.wifip2p.models.ViewState
+import github.leavesczy.wifip2p.common.Constants
+import github.leavesczy.wifip2p.common.FileTransfer
+import github.leavesczy.wifip2p.common.FileTransferViewState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -30,16 +30,17 @@ import kotlin.random.Random
  * @Date: 2022/9/26 10:38
  * @Desc:
  */
-class FileSenderViewModel(context: Application) :
-    AndroidViewModel(context) {
+class FileSenderViewModel(context: Application) : AndroidViewModel(context) {
 
-    private val _viewState = MutableSharedFlow<ViewState>()
+    private val _fileTransferViewState = MutableSharedFlow<FileTransferViewState>()
 
-    val viewState: SharedFlow<ViewState> = _viewState
+    val fileTransferViewState: SharedFlow<FileTransferViewState>
+        get() = _fileTransferViewState
 
     private val _log = MutableSharedFlow<String>()
 
-    val log: SharedFlow<String> = _log
+    val log: SharedFlow<String>
+        get() = _log
 
     private var job: Job? = null
 
@@ -49,7 +50,7 @@ class FileSenderViewModel(context: Application) :
         }
         job = viewModelScope.launch {
             withContext(context = Dispatchers.IO) {
-                _viewState.emit(value = ViewState.Idle)
+                _fileTransferViewState.emit(value = FileTransferViewState.Idle)
 
                 var socket: Socket? = null
                 var outputStream: OutputStream? = null
@@ -60,7 +61,7 @@ class FileSenderViewModel(context: Application) :
                         saveFileToCacheDir(context = getApplication(), fileUri = fileUri)
                     val fileTransfer = FileTransfer(fileName = cacheFile.name)
 
-                    _viewState.emit(value = ViewState.Connecting)
+                    _fileTransferViewState.emit(value = FileTransferViewState.Connecting)
                     _log.emit(value = "待发送的文件: $fileTransfer")
                     _log.emit(value = "开启 Socket")
 
@@ -71,7 +72,7 @@ class FileSenderViewModel(context: Application) :
 
                     socket.connect(InetSocketAddress(ipAddress, Constants.PORT), 30000)
 
-                    _viewState.emit(value = ViewState.Receiving)
+                    _fileTransferViewState.emit(value = FileTransferViewState.Receiving)
                     _log.emit(value = "连接成功，开始传输文件")
 
                     outputStream = socket.getOutputStream()
@@ -90,11 +91,11 @@ class FileSenderViewModel(context: Application) :
                         _log.emit(value = "正在传输文件，length : $length")
                     }
                     _log.emit(value = "文件发送成功")
-                    _viewState.emit(value = ViewState.Success(file = cacheFile))
+                    _fileTransferViewState.emit(value = FileTransferViewState.Success(file = cacheFile))
                 } catch (e: Throwable) {
                     e.printStackTrace()
                     _log.emit(value = "异常: " + e.message)
-                    _viewState.emit(value = ViewState.Failed(throwable = e))
+                    _fileTransferViewState.emit(value = FileTransferViewState.Failed(throwable = e))
                 } finally {
                     fileInputStream?.close()
                     outputStream?.close()
@@ -113,12 +114,8 @@ class FileSenderViewModel(context: Application) :
             val documentFile = DocumentFile.fromSingleUri(context, fileUri)
                 ?: throw NullPointerException("fileName for given input Uri is null")
             val fileName = documentFile.name
-            val outputFile = File(
-                context.cacheDir, Random.nextInt(
-                    1,
-                    200
-                ).toString() + "_" + fileName
-            )
+            val outputFile =
+                File(context.cacheDir, Random.nextInt(1, 200).toString() + "_" + fileName)
             if (outputFile.exists()) {
                 outputFile.delete()
             }

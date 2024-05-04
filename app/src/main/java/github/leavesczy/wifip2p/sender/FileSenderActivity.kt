@@ -12,6 +12,7 @@ import android.widget.Button
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -21,7 +22,7 @@ import github.leavesczy.wifip2p.DirectActionListener
 import github.leavesczy.wifip2p.DirectBroadcastReceiver
 import github.leavesczy.wifip2p.OnItemClickListener
 import github.leavesczy.wifip2p.R
-import github.leavesczy.wifip2p.models.ViewState
+import github.leavesczy.wifip2p.common.FileTransferViewState
 import github.leavesczy.wifip2p.utils.WifiP2pUtils
 import kotlinx.coroutines.launch
 
@@ -62,17 +63,16 @@ class FileSenderActivity : BaseActivity() {
 
     private val fileSenderViewModel by viewModels<FileSenderViewModel>()
 
-    private val getContentLaunch = registerForActivityResult(
-        ActivityResultContracts.GetContent()
-    ) { imageUri ->
-        if (imageUri != null) {
-            val ipAddress = wifiP2pInfo?.groupOwnerAddress?.hostAddress
-            log("getContentLaunch $imageUri $ipAddress")
-            if (!ipAddress.isNullOrBlank()) {
-                fileSenderViewModel.send(ipAddress = ipAddress, fileUri = imageUri)
+    private val imagePickerLauncher =
+        registerForActivityResult(ActivityResultContracts.GetContent()) { imageUri ->
+            if (imageUri != null) {
+                val ipAddress = wifiP2pInfo?.groupOwnerAddress?.hostAddress
+                log("getContentLaunch $imageUri $ipAddress")
+                if (!ipAddress.isNullOrBlank()) {
+                    fileSenderViewModel.send(ipAddress = ipAddress, fileUri = imageUri)
+                }
             }
         }
-    }
 
     private val wifiP2pDeviceList = mutableListOf<WifiP2pDevice>()
 
@@ -167,7 +167,7 @@ class FileSenderActivity : BaseActivity() {
             disconnect()
         }
         btnChooseFile.setOnClickListener {
-            getContentLaunch.launch("image/*")
+            imagePickerLauncher.launch("image/*")
         }
         btnDirectDiscover.setOnClickListener {
             if (!wifiP2pEnabled) {
@@ -215,31 +215,36 @@ class FileSenderActivity : BaseActivity() {
         wifiP2pChannel = mWifiP2pManager.initialize(this, mainLooper, directActionListener)
         broadcastReceiver =
             DirectBroadcastReceiver(mWifiP2pManager, wifiP2pChannel, directActionListener)
-        registerReceiver(broadcastReceiver, DirectBroadcastReceiver.getIntentFilter())
+        ContextCompat.registerReceiver(
+            this,
+            broadcastReceiver,
+            DirectBroadcastReceiver.getIntentFilter(),
+            ContextCompat.RECEIVER_NOT_EXPORTED
+        )
     }
 
     private fun initEvent() {
         lifecycleScope.launch {
-            fileSenderViewModel.viewState.collect {
+            fileSenderViewModel.fileTransferViewState.collect {
                 when (it) {
-                    ViewState.Idle -> {
+                    FileTransferViewState.Idle -> {
                         clearLog()
                         dismissLoadingDialog()
                     }
 
-                    ViewState.Connecting -> {
+                    FileTransferViewState.Connecting -> {
                         showLoadingDialog(message = "")
                     }
 
-                    is ViewState.Receiving -> {
+                    is FileTransferViewState.Receiving -> {
                         showLoadingDialog(message = "")
                     }
 
-                    is ViewState.Success -> {
+                    is FileTransferViewState.Success -> {
                         dismissLoadingDialog()
                     }
 
-                    is ViewState.Failed -> {
+                    is FileTransferViewState.Failed -> {
                         dismissLoadingDialog()
                     }
                 }
@@ -266,7 +271,9 @@ class FileSenderActivity : BaseActivity() {
         wifiP2pConfig.wps.setup = WpsInfo.PBC
         showLoadingDialog(message = "正在连接，deviceName: " + wifiP2pDevice.deviceName)
         showToast("正在连接，deviceName: " + wifiP2pDevice.deviceName)
-        wifiP2pManager.connect(wifiP2pChannel, wifiP2pConfig,
+        wifiP2pManager.connect(
+            wifiP2pChannel,
+            wifiP2pConfig,
             object : WifiP2pManager.ActionListener {
                 override fun onSuccess() {
                     log("connect onSuccess")
@@ -276,7 +283,8 @@ class FileSenderActivity : BaseActivity() {
                     showToast("连接失败 $reason")
                     dismissLoadingDialog()
                 }
-            })
+            }
+        )
     }
 
     private fun disconnect() {

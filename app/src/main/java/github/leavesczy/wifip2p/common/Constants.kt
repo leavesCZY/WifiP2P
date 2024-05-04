@@ -1,4 +1,4 @@
-package github.leavesczy.wifip2p
+package github.leavesczy.wifip2p.common
 
 /**
  * @Author: leavesCZY

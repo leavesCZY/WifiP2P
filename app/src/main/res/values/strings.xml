@@ -1,4 +1,4 @@
 <resources>
     <string name="app_name">WifiP2P</string>
-    <string name="tips">1、文件发送端和接收端均需开启 Wifi\n2、文件接收端先创建群组，文件发送端搜索到该设备并点击连接\n3、连接成功后，文件接收端先启动监听，然后文件发送端再去选择需要发送的文件</string>
+    <string name="tips">1、文件发送端和接收端均需开启 Wifi\n2、接收端先创建群组，发送端搜索到该设备并点击连接\n3、连接成功后，接收端先启动监听，然后发送端再选择文件进行发送</string>
 </resources>

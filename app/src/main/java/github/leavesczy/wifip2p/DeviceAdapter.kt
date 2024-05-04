@@ -10,9 +10,9 @@ import github.leavesczy.wifip2p.utils.WifiP2pUtils
 
 /**
  * @Author: leavesCZY
+ * @Date: 2024/4/1 11:27
  * @Desc:
  */
-
 interface OnItemClickListener {
 
     fun onItemClick(position: Int)
@@ -44,8 +44,11 @@ class DeviceAdapter(private val wifiP2pDeviceList: List<WifiP2pDevice>) :
     }
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+
         val tvDeviceName: TextView
+
         val tvDeviceAddress: TextView
+
         val tvDeviceDetails: TextView
 
         init {
@@ -54,4 +57,5 @@ class DeviceAdapter(private val wifiP2pDeviceList: List<WifiP2pDevice>) :
             tvDeviceDetails = itemView.findViewById(R.id.tvDeviceDetails)
         }
     }
+
 }
