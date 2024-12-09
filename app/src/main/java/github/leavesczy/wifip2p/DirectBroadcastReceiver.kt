@@ -23,9 +23,9 @@ interface DirectActionListener : WifiP2pManager.ChannelListener {
 
     fun onDisconnection()
 
-    fun onSelfDeviceAvailable(wifiP2pDevice: WifiP2pDevice)
+    fun onSelfDeviceAvailable(device: WifiP2pDevice)
 
-    fun onPeersAvailable(wifiP2pDeviceList: Collection<WifiP2pDevice>)
+    fun onPeersAvailable(devices: List<WifiP2pDevice>)
 
 }
 
@@ -66,16 +66,14 @@ class DirectBroadcastReceiver(
             WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION -> {
                 Logger.log("WIFI_P2P_PEERS_CHANGED_ACTION")
                 wifiP2pManager.requestPeers(wifiP2pChannel) { peers ->
-                    directActionListener.onPeersAvailable(peers.deviceList)
+                    directActionListener.onPeersAvailable(peers.deviceList.toList())
                 }
             }
 
             WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION -> {
                 val networkInfo =
                     intent.getParcelableExtra<NetworkInfo>(WifiP2pManager.EXTRA_NETWORK_INFO)
-
                 Logger.log("WIFI_P2P_CONNECTION_CHANGED_ACTION ： " + networkInfo?.isConnected)
-
                 if (networkInfo != null && networkInfo.isConnected) {
                     wifiP2pManager.requestConnectionInfo(wifiP2pChannel) { info ->
                         if (info != null) {

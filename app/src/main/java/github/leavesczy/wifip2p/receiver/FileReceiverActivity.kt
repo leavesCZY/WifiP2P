@@ -2,24 +2,29 @@ package github.leavesczy.wifip2p.receiver
 
 import android.annotation.SuppressLint
 import android.content.BroadcastReceiver
+import android.graphics.BitmapFactory
 import android.net.wifi.p2p.WifiP2pDevice
 import android.net.wifi.p2p.WifiP2pInfo
 import android.net.wifi.p2p.WifiP2pManager
 import android.os.Bundle
+import android.view.View
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.viewModels
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
-import coil.load
 import github.leavesczy.wifip2p.BaseActivity
 import github.leavesczy.wifip2p.DirectActionListener
 import github.leavesczy.wifip2p.DirectBroadcastReceiver
 import github.leavesczy.wifip2p.R
 import github.leavesczy.wifip2p.common.FileTransferViewState
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withContext
+import java.io.File
 import kotlin.coroutines.resume
 
 /**
@@ -50,46 +55,45 @@ class FileReceiverActivity : BaseActivity() {
 
     private val fileReceiverViewModel by viewModels<FileReceiverViewModel>()
 
-    private lateinit var wifiP2pManager: WifiP2pManager
+    private val wifiP2pManager: WifiP2pManager by lazy {
+        getSystemService(WIFI_P2P_SERVICE) as WifiP2pManager
+    }
 
     private lateinit var wifiP2pChannel: WifiP2pManager.Channel
-
-    private var connectionInfoAvailable = false
 
     private var broadcastReceiver: BroadcastReceiver? = null
 
     private val directActionListener = object : DirectActionListener {
         override fun wifiP2pEnabled(enabled: Boolean) {
-            log("wifiP2pEnabled: $enabled")
+            log(log = "wifiP2pEnabled: $enabled")
         }
 
         override fun onConnectionInfoAvailable(wifiP2pInfo: WifiP2pInfo) {
-            log("onConnectionInfoAvailable")
-            log("isGroupOwner：" + wifiP2pInfo.isGroupOwner)
-            log("groupFormed：" + wifiP2pInfo.groupFormed)
-            if (wifiP2pInfo.groupFormed && wifiP2pInfo.isGroupOwner) {
-                connectionInfoAvailable = true
-            }
+            log(
+                log = "onConnectionInfoAvailable " + "\n"
+                        + "isGroupOwner: " + wifiP2pInfo.isGroupOwner + "\n"
+                        + "groupFormed: " + wifiP2pInfo.groupFormed + "\n"
+                        + "groupOwnerAddress: " + wifiP2pInfo.groupOwnerAddress.toString()
+            )
         }
 
         override fun onDisconnection() {
-            connectionInfoAvailable = false
-            log("onDisconnection")
+            log(log = "onDisconnection")
         }
 
-        override fun onSelfDeviceAvailable(wifiP2pDevice: WifiP2pDevice) {
-            log("onSelfDeviceAvailable: \n$wifiP2pDevice")
+        override fun onSelfDeviceAvailable(device: WifiP2pDevice) {
+            log(log = "onSelfDeviceAvailable: $device")
         }
 
-        override fun onPeersAvailable(wifiP2pDeviceList: Collection<WifiP2pDevice>) {
-            log("onPeersAvailable , size:" + wifiP2pDeviceList.size)
-            for (wifiP2pDevice in wifiP2pDeviceList) {
-                log("wifiP2pDevice: $wifiP2pDevice")
+        override fun onPeersAvailable(devices: List<WifiP2pDevice>) {
+            log(log = "onPeersAvailable, size:" + devices.size)
+            for (wifiP2pDevice in devices) {
+                log(log = "wifiP2pDevice: $wifiP2pDevice")
             }
         }
 
         override fun onChannelDisconnected() {
-            log("onChannelDisconnected")
+            log(log = "onChannelDisconnected")
         }
     }
 
@@ -99,6 +103,7 @@ class FileReceiverActivity : BaseActivity() {
         initView()
         initDevice()
         initEvent()
+        onBackPressedObserver()
     }
 
     private fun initView() {
@@ -107,7 +112,9 @@ class FileReceiverActivity : BaseActivity() {
             createGroup()
         }
         btnRemoveGroup.setOnClickListener {
-            removeGroup()
+            lifecycleScope.launch {
+                removeGroupIfNeed()
+            }
         }
         btnStartReceive.setOnClickListener {
             fileReceiverViewModel.startListener()
@@ -115,12 +122,6 @@ class FileReceiverActivity : BaseActivity() {
     }
 
     private fun initDevice() {
-        val mWifiP2pManager = getSystemService(WIFI_P2P_SERVICE) as? WifiP2pManager
-        if (mWifiP2pManager == null) {
-            finish()
-            return
-        }
-        wifiP2pManager = mWifiP2pManager
         wifiP2pChannel = wifiP2pManager.initialize(this, mainLooper, directActionListener)
         broadcastReceiver = DirectBroadcastReceiver(
             wifiP2pManager = wifiP2pManager,
@@ -155,7 +156,7 @@ class FileReceiverActivity : BaseActivity() {
 
                         is FileTransferViewState.Success -> {
                             dismissLoadingDialog()
-                            ivImage.load(data = it.file)
+                            showImage(file = it.file)
                         }
 
                         is FileTransferViewState.Failed -> {
@@ -166,18 +167,10 @@ class FileReceiverActivity : BaseActivity() {
             }
             launch {
                 fileReceiverViewModel.log.collect {
-                    log(it)
+                    log(log = it)
                 }
             }
         }
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        if (broadcastReceiver != null) {
-            unregisterReceiver(broadcastReceiver)
-        }
-        removeGroup()
     }
 
     @SuppressLint("MissingPermission")
@@ -200,12 +193,6 @@ class FileReceiverActivity : BaseActivity() {
         }
     }
 
-    private fun removeGroup() {
-        lifecycleScope.launch {
-            removeGroupIfNeed()
-        }
-    }
-
     @SuppressLint("MissingPermission")
     private suspend fun removeGroupIfNeed() {
         return suspendCancellableCoroutine { continuation ->
@@ -213,7 +200,8 @@ class FileReceiverActivity : BaseActivity() {
                 if (group == null) {
                     continuation.resume(value = Unit)
                 } else {
-                    wifiP2pManager.removeGroup(wifiP2pChannel,
+                    wifiP2pManager.removeGroup(
+                        wifiP2pChannel,
                         object : WifiP2pManager.ActionListener {
                             override fun onSuccess() {
                                 val log = "removeGroup onSuccess"
@@ -236,11 +224,40 @@ class FileReceiverActivity : BaseActivity() {
 
     private fun log(log: String) {
         tvLog.append(log)
-        tvLog.append("\n\n")
+        tvLog.append("\n")
     }
 
     private fun clearLog() {
         tvLog.text = ""
+    }
+
+    private fun showImage(file: File?) {
+        if (file == null) {
+            ivImage.setImageBitmap(null)
+            ivImage.visibility = View.GONE
+        } else {
+            lifecycleScope.launch {
+                val bitmap = withContext(context = Dispatchers.IO) {
+                    BitmapFactory.decodeFile(file.absolutePath)
+                }
+                ivImage.setImageBitmap(bitmap)
+                ivImage.visibility = View.VISIBLE
+            }
+        }
+    }
+
+    private fun onBackPressedObserver() {
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                lifecycleScope.launch {
+                    if (broadcastReceiver != null) {
+                        unregisterReceiver(broadcastReceiver)
+                    }
+                    removeGroupIfNeed()
+                    finish()
+                }
+            }
+        })
     }
 
 }

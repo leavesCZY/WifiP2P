@@ -42,16 +42,16 @@ class FileSenderViewModel(context: Application) : AndroidViewModel(context) {
     val log: SharedFlow<String>
         get() = _log
 
-    private var job: Job? = null
+    private var fileSenderJob: Job? = null
 
     fun send(ipAddress: String, fileUri: Uri) {
-        if (job != null) {
+        val job = fileSenderJob
+        if (job != null && job.isActive) {
             return
         }
-        job = viewModelScope.launch {
+        fileSenderJob = viewModelScope.launch {
             withContext(context = Dispatchers.IO) {
                 _fileTransferViewState.emit(value = FileTransferViewState.Idle)
-
                 var socket: Socket? = null
                 var outputStream: OutputStream? = null
                 var objectOutputStream: ObjectOutputStream? = null
@@ -60,26 +60,28 @@ class FileSenderViewModel(context: Application) : AndroidViewModel(context) {
                     val cacheFile =
                         saveFileToCacheDir(context = getApplication(), fileUri = fileUri)
                     val fileTransfer = FileTransfer(fileName = cacheFile.name)
-
                     _fileTransferViewState.emit(value = FileTransferViewState.Connecting)
-                    _log.emit(value = "待发送的文件: $fileTransfer")
-                    _log.emit(value = "开启 Socket")
-
+                    log {
+                        "待发送的文件: $fileTransfer"
+                    }
+                    log {
+                        "开启 Socket"
+                    }
                     socket = Socket()
                     socket.bind(null)
-
-                    _log.emit(value = "socket connect，如果三十秒内未连接成功则放弃")
-
-                    socket.connect(InetSocketAddress(ipAddress, Constants.PORT), 30000)
-
+                    log {
+                        "socket connect，如果十五秒内未连接成功则放弃"
+                    }
+                    socket.connect(InetSocketAddress(ipAddress, Constants.PORT), 15000)
                     _fileTransferViewState.emit(value = FileTransferViewState.Receiving)
-                    _log.emit(value = "连接成功，开始传输文件")
-
+                    log {
+                        "连接成功，开始传输文件"
+                    }
                     outputStream = socket.getOutputStream()
                     objectOutputStream = ObjectOutputStream(outputStream)
                     objectOutputStream.writeObject(fileTransfer)
                     fileInputStream = FileInputStream(cacheFile)
-                    val buffer = ByteArray(1024 * 100)
+                    val buffer = ByteArray(1024 * 1024)
                     var length: Int
                     while (true) {
                         length = fileInputStream.read(buffer)
@@ -88,14 +90,20 @@ class FileSenderViewModel(context: Application) : AndroidViewModel(context) {
                         } else {
                             break
                         }
-                        _log.emit(value = "正在传输文件，length : $length")
+                        log {
+                            "正在传输文件，length : $length"
+                        }
                     }
-                    _log.emit(value = "文件发送成功")
+                    log {
+                        "文件发送成功"
+                    }
                     _fileTransferViewState.emit(value = FileTransferViewState.Success(file = cacheFile))
-                } catch (e: Throwable) {
-                    e.printStackTrace()
-                    _log.emit(value = "异常: " + e.message)
-                    _fileTransferViewState.emit(value = FileTransferViewState.Failed(throwable = e))
+                } catch (throwable: Throwable) {
+                    throwable.printStackTrace()
+                    log {
+                        "抛出异常: " + throwable.message
+                    }
+                    _fileTransferViewState.emit(value = FileTransferViewState.Failed(throwable = throwable))
                 } finally {
                     fileInputStream?.close()
                     outputStream?.close()
@@ -103,9 +111,6 @@ class FileSenderViewModel(context: Application) : AndroidViewModel(context) {
                     socket?.close()
                 }
             }
-        }
-        job?.invokeOnCompletion {
-            job = null
         }
     }
 
@@ -144,6 +149,10 @@ class FileSenderViewModel(context: Application) : AndroidViewModel(context) {
             inputStream.close()
             outputStream.close()
         }
+    }
+
+    private suspend fun log(log: () -> Any) {
+        _log.emit(value = log().toString())
     }
 
 }

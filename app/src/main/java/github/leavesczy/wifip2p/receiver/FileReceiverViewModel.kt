@@ -36,45 +36,48 @@ class FileReceiverViewModel(context: Application) : AndroidViewModel(context) {
     val log: SharedFlow<String>
         get() = _log
 
-    private var job: Job? = null
+    private var fileReceiverJob: Job? = null
 
     fun startListener() {
-        if (job != null) {
+        val job = fileReceiverJob
+        if (job != null && job.isActive) {
             return
         }
-        job = viewModelScope.launch(context = Dispatchers.IO) {
+        fileReceiverJob = viewModelScope.launch(context = Dispatchers.IO) {
             _fileTransferViewState.emit(value = FileTransferViewState.Idle)
-
             var serverSocket: ServerSocket? = null
             var clientInputStream: InputStream? = null
             var objectInputStream: ObjectInputStream? = null
             var fileOutputStream: FileOutputStream? = null
             try {
                 _fileTransferViewState.emit(value = FileTransferViewState.Connecting)
-                log(log = "开启 Socket")
-
+                log {
+                    "开启 Socket"
+                }
                 serverSocket = ServerSocket()
                 serverSocket.bind(InetSocketAddress(Constants.PORT))
                 serverSocket.reuseAddress = true
-                serverSocket.soTimeout = 30000
-
-                log(log = "socket accept，三十秒内如果未成功则断开链接")
-
+                serverSocket.soTimeout = 15000
+                log {
+                    "socket accept，十五秒内如果未成功则断开链接"
+                }
                 val client = serverSocket.accept()
-
                 _fileTransferViewState.emit(value = FileTransferViewState.Receiving)
-
                 clientInputStream = client.getInputStream()
                 objectInputStream = ObjectInputStream(clientInputStream)
                 val fileTransfer = objectInputStream.readObject() as FileTransfer
                 val file = File(getCacheDir(context = getApplication()), fileTransfer.fileName)
-
-                log(log = "连接成功，待接收的文件: $fileTransfer")
-                log(log = "文件将保存到: $file")
-                log(log = "开始传输文件")
-
+                log {
+                    buildString {
+                        append("连接成功，待接收的文件: $fileTransfer")
+                        append("\n")
+                        append("文件将保存到: $file")
+                        append("\n")
+                        append("开始传输文件")
+                    }
+                }
                 fileOutputStream = FileOutputStream(file)
-                val buffer = ByteArray(1024 * 100)
+                val buffer = ByteArray(1024 * 1024)
                 while (true) {
                     val length = clientInputStream.read(buffer)
                     if (length > 0) {
@@ -82,22 +85,25 @@ class FileReceiverViewModel(context: Application) : AndroidViewModel(context) {
                     } else {
                         break
                     }
-                    log(log = "正在传输文件，length : $length")
+                    log {
+                        "正在传输文件，length : $length"
+                    }
                 }
                 _fileTransferViewState.emit(value = FileTransferViewState.Success(file = file))
-                log(log = "文件接收成功")
-            } catch (e: Throwable) {
-                log(log = "异常: " + e.message)
-                _fileTransferViewState.emit(value = FileTransferViewState.Failed(throwable = e))
+                log {
+                    "文件接收成功"
+                }
+            } catch (throwable: Throwable) {
+                log {
+                    "抛出异常: " + throwable.message
+                }
+                _fileTransferViewState.emit(value = FileTransferViewState.Failed(throwable = throwable))
             } finally {
                 serverSocket?.close()
                 clientInputStream?.close()
                 objectInputStream?.close()
                 fileOutputStream?.close()
             }
-        }
-        job?.invokeOnCompletion {
-            job = null
         }
     }
 
@@ -107,8 +113,8 @@ class FileReceiverViewModel(context: Application) : AndroidViewModel(context) {
         return cacheDir
     }
 
-    private suspend fun log(log: String) {
-        _log.emit(value = log)
+    private suspend fun log(log: () -> Any) {
+        _log.emit(value = log().toString())
     }
 
 }

@@ -45,17 +45,12 @@ class DeviceAdapter(private val wifiP2pDeviceList: List<WifiP2pDevice>) :
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
-        val tvDeviceName: TextView
+        val tvDeviceName: TextView = itemView.findViewById(R.id.tvDeviceName)
 
-        val tvDeviceAddress: TextView
+        val tvDeviceAddress: TextView = itemView.findViewById(R.id.tvDeviceAddress)
 
-        val tvDeviceDetails: TextView
+        val tvDeviceDetails: TextView = itemView.findViewById(R.id.tvDeviceDetails)
 
-        init {
-            tvDeviceName = itemView.findViewById(R.id.tvDeviceName)
-            tvDeviceAddress = itemView.findViewById(R.id.tvDeviceAddress)
-            tvDeviceDetails = itemView.findViewById(R.id.tvDeviceDetails)
-        }
     }
 
 }

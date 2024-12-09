@@ -3,11 +3,12 @@
 
     <style name="Base.Theme.WifiP2P" parent="Theme.Material3.Light">
         <item name="colorPrimary">@color/color_top_bar</item>
-        <item name="colorOnSurface">@android:color/white</item>
+        <item name="colorOnSurface">@color/white</item>
         <item name="toolbarStyle">@style/Theme.WifiP2P.Toolbar</item>
-        <item name="android:navigationBarColor">@android:color/white</item>
+        <item name="android:navigationBarColor">@color/white</item>
         <item name="android:windowLightStatusBar">false</item>
         <item name="android:windowLightNavigationBar" tools:targetApi="o_mr1">true</item>
+        <item name="android:windowOptOutEdgeToEdgeEnforcement" tools:ignore="NewApi">true</item>
     </style>
 
     <style name="Theme.WifiP2P.Toolbar" parent="Widget.Material3.Toolbar">

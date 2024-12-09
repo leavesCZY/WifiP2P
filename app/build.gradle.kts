@@ -1,5 +1,3 @@
-@file:Suppress("UnstableApiUsage")
-
 import com.android.build.gradle.internal.api.ApkVariantOutputImpl
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -12,8 +10,8 @@ plugins {
 
 android {
     namespace = "github.leavesczy.wifip2p"
-    compileSdk = 34
-    buildToolsVersion = "34.0.0"
+    compileSdk = 35
+    buildToolsVersion = "35.0.0"
     defaultConfig {
         applicationId = "github.leavesczy.wifip2p"
         minSdk = 23
@@ -29,7 +27,7 @@ android {
             outputs.all {
                 if (this is ApkVariantOutputImpl) {
                     this.outputFileName =
-                        "WifiFileTransfer_${variant.name}_versionCode_${variant.versionCode}_versionName_${variant.versionName}_${buildTime()}.apk"
+                        "WifiP2P_${variant.name}_${variant.versionName}_${variant.versionCode}_${buildTime()}.apk"
                 }
             }
         }
@@ -37,7 +35,7 @@ android {
     signingConfigs {
         create("release") {
             storeFile =
-                File(rootDir.absolutePath + File.separator + "doc" + File.separator + "key.jks")
+                File(rootDir.absolutePath + File.separator + "key.jks")
             keyAlias = "leavesCZY"
             storePassword = "123456"
             keyPassword = "123456"
@@ -101,14 +99,11 @@ fun buildTime(): String {
 
 dependencies {
     testImplementation("junit:junit:4.13.2")
-    androidTestImplementation("androidx.test.ext:junit:1.1.5")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
-    implementation("androidx.appcompat:appcompat:1.6.1")
-    implementation("androidx.activity:activity:1.9.0")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0")
+    androidTestImplementation("androidx.test.ext:junit:1.2.1")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
+    implementation("androidx.appcompat:appcompat:1.7.0")
+    implementation("androidx.activity:activity:1.9.3")
+    implementation("androidx.lifecycle:lifecycle-viewmodel:2.8.7")
     implementation("androidx.recyclerview:recyclerview:1.3.2")
     implementation("com.google.android.material:material:1.12.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.0")
-    implementation("io.coil-kt:coil:2.6.0")
 }
