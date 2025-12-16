@@ -278,7 +278,8 @@ class FileSenderActivity : BaseActivity() {
         wifiP2pConfig.wps.setup = WpsInfo.PBC
         showLoadingDialog(message = "正在连接，deviceName: " + wifiP2pDevice.deviceName)
         showToast(message = "正在连接，deviceName: " + wifiP2pDevice.deviceName)
-        wifiP2pManager.connect(wifiP2pChannel, wifiP2pConfig,
+        wifiP2pManager.connect(
+            wifiP2pChannel, wifiP2pConfig,
             object : WifiP2pManager.ActionListener {
                 override fun onSuccess() {
                     log(log = "connect onSuccess")

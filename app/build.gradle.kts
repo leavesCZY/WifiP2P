@@ -1,7 +1,4 @@
-import com.android.build.gradle.internal.api.ApkVariantOutputImpl
-import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.TimeZone
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     id("com.android.application")
@@ -10,8 +7,8 @@ plugins {
 
 android {
     namespace = "github.leavesczy.wifip2p"
-    compileSdk = 35
-    buildToolsVersion = "35.0.0"
+    compileSdk = 36
+    buildToolsVersion = "36.1.0"
     defaultConfig {
         applicationId = "github.leavesczy.wifip2p"
         minSdk = 23
@@ -22,20 +19,10 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
-        applicationVariants.all {
-            val variant = this
-            outputs.all {
-                if (this is ApkVariantOutputImpl) {
-                    this.outputFileName =
-                        "WifiP2P_${variant.name}_${variant.versionName}_${variant.versionCode}_${buildTime()}.apk"
-                }
-            }
-        }
     }
     signingConfigs {
         create("release") {
-            storeFile =
-                File(rootDir.absolutePath + File.separator + "key.jks")
+            storeFile = File(rootDir.absolutePath + File.separator + "key.jks")
             keyAlias = "leavesCZY"
             storePassword = "123456"
             keyPassword = "123456"
@@ -66,11 +53,13 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
     }
-    kotlinOptions {
-        jvmTarget = "11"
+    kotlin {
+        compilerOptions {
+            jvmTarget = JvmTarget.JVM_21
+        }
     }
     packaging {
         jniLibs {
@@ -91,19 +80,14 @@ android {
     }
 }
 
-fun buildTime(): String {
-    val simpleDateFormat = SimpleDateFormat("yyyy_MM_dd_HH_mm_ss")
-    simpleDateFormat.timeZone = TimeZone.getTimeZone("Asia/Shanghai")
-    return simpleDateFormat.format(Calendar.getInstance().time)
-}
-
 dependencies {
     testImplementation("junit:junit:4.13.2")
-    androidTestImplementation("androidx.test.ext:junit:1.2.1")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
-    implementation("androidx.appcompat:appcompat:1.7.0")
-    implementation("androidx.activity:activity:1.9.3")
-    implementation("androidx.lifecycle:lifecycle-viewmodel:2.8.7")
-    implementation("androidx.recyclerview:recyclerview:1.3.2")
-    implementation("com.google.android.material:material:1.12.0")
+    androidTestImplementation("androidx.test.ext:junit:1.3.0")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.7.0")
+    implementation("androidx.appcompat:appcompat:1.7.1")
+    implementation("androidx.activity:activity:1.12.1")
+    implementation("androidx.documentfile:documentfile:1.1.0")
+    implementation("androidx.lifecycle:lifecycle-viewmodel:2.10.0")
+    implementation("androidx.recyclerview:recyclerview:1.4.0")
+    implementation("com.google.android.material:material:1.13.0")
 }
