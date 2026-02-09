@@ -2,7 +2,6 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     id("com.android.application")
-    kotlin("android")
 }
 
 android {
@@ -85,7 +84,7 @@ dependencies {
     androidTestImplementation("androidx.test.ext:junit:1.3.0")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.7.0")
     implementation("androidx.appcompat:appcompat:1.7.1")
-    implementation("androidx.activity:activity:1.12.1")
+    implementation("androidx.activity:activity:1.12.3")
     implementation("androidx.documentfile:documentfile:1.1.0")
     implementation("androidx.lifecycle:lifecycle-viewmodel:2.10.0")
     implementation("androidx.recyclerview:recyclerview:1.4.0")
